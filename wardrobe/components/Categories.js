@@ -24,7 +24,7 @@ const Categories = () => {
     }
 
     const navigateToCasualWear = () => {
-        setCategory("Casual wear")
+        setCategory("Unstitched")
         setBrand("")
         navigation.navigate("ProductPage")
     } 
@@ -48,7 +48,7 @@ const Categories = () => {
             <Animated.View entering={SlideInDown.delay(400).duration(600)} className='w-full items-center'>
                 <Pressable className='items-center mt-4 h-[195px] bg-white rounded-xl active:scale-105' style={{elevation: 15}} onPress={() => navigateToCasualWear()}>
                     <Image className='w-[170px] h-[160px] rounded-xl' resizeMode='contain' source={{uri: "https://tse1.mm.bing.net/th?id=OIP.IQXMSVWq4dksa1SYdfDoAgHaKe&pid=Api&P=0"}}/>
-                    <Text className='text-black font-bold text-[16px]'>Casual Wear</Text>
+                    <Text className='text-black font-bold text-[16px]'>Unstitched</Text>
                 </Pressable>
             </Animated.View>
         </Animated.View>

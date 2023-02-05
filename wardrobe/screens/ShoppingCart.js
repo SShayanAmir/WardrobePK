@@ -21,8 +21,6 @@ import Clipboard from '@react-native-clipboard/clipboard'
 
 import Animated, { FadeInDown, FadeOutDown, SlideInDown, SlideInLeft, SlideInRight, SlideInUp, ZoomInEasyDown } from 'react-native-reanimated';
 
-import { SERVER_URL } from '@env';
-
 const ShoppingCart = ({navigation}) => {
 
   const {getCredentials} = useAuth0();
@@ -95,16 +93,11 @@ const ShoppingCart = ({navigation}) => {
       
       const token = await getCredentials();
 
-      const response = await fetch(`${SERVER_URL}/customer/order`, {
+      const response = await fetch(`${process.env.SERVER_URL}/customer/order`, {
         method: "POST",
         headers: {"Content-Type": "application/json", Authorization: `Bearer ${token.accessToken}`},
         body: JSON.stringify(body)
       })
-
-      const subject = `Wardrobe\nYour Order Has Been Placed`
-      const emailBody = `We have got your order!\n Name: ${firstName} ${lastName}\n Tracking Number: ${trackingNumber}\n Order Total: ${grandTotal}\n Address: ${state} \n ${city}\n ${address}`
-
-      // const url = `mailto:${email}?subject=${subject}&body=${emailBody}`
 
       setLoading(false)
       setCheckoutCompleteModal(true)

@@ -23,8 +23,6 @@ import {useAuth0} from 'react-native-auth0';
 import Animated, { BounceIn, BounceOut, FlipInXUp, FlipOutXUp, SlideInDown, SlideInLeft, SlideInRight, SlideInUp, SlideOutRight, useAnimatedStyle, withRepeat, withTiming} from 'react-native-reanimated';
 import ScrollToTopContext from '../context/ScrollToTop';
 
-import { SERVER_URL } from '@env';
-
 const PopularProducts = () => {
   const {authorize, user} = useAuth0();
 
@@ -155,7 +153,7 @@ const PopularProducts = () => {
     }
 
     const getProducts = async () => {
-        const response = await fetch(`${SERVER_URL}/product`);
+        const response = await fetch(`${process.env.SERVER_URL}/product`);
         const JsonData = await response.json(); 
   
         setProducts(JsonData);

@@ -9,14 +9,12 @@ import React, {useEffect, useState} from 'react';
 
 import Animated, { SlideInLeft, ZoomInEasyDown } from 'react-native-reanimated';
 
-import { SERVER_URL } from '@env';
-
 const Brands = props => {
   const [brands, setBrands] = useState([]);
 
   const getAllBrands = async () => {
     try {
-      const response = await fetch(`${SERVER_URL}/brand`);
+      const response = await fetch(`${process.env.SERVER_URL}/brand`);
       const JsonData = await response.json();
 
       setBrands(JsonData);
@@ -54,7 +52,7 @@ const Brands = props => {
             <Animated.View entering={ZoomInEasyDown.duration(800)}>
               <Pressable
                 style={{elevation: 25}}
-                className="items-center bg-white ml-4 mt-3 mb-12 active:scale-105 rounded-xl h-[140px]"
+                className="items-center ml-3 mr-2 mt-3 mb-12 active:scale-105 rounded-xl h-[140px]"
                 onPress={() =>
                   props.navigateToProductScreen(brand.item.covertitle)
                 }

@@ -8,8 +8,6 @@ import { useAuth0 } from 'react-native-auth0';
 
 import Animated, { SlideInDown, SlideInLeft, SlideInRight, SlideInUp, ZoomInEasyDown } from 'react-native-reanimated';
 
-import { SERVER_URL } from '@env';
-
 const Orders = () => {
 
     const {getCredentials} = useAuth0();
@@ -37,7 +35,7 @@ const Orders = () => {
 
             const token = await getCredentials();
 
-            const response = await fetch(`${SERVER_URL}/admin/order/${status}`, {headers: {Authorization: `Bearer ${token.accessToken}`}})
+            const response = await fetch(`${process.env.SERVER_URL}/admin/order/${status}`, {headers: {Authorization: `Bearer ${token.accessToken}`}})
             const jsonData = await response.json()
             
             setLoading(false)
@@ -63,7 +61,7 @@ const Orders = () => {
 
       const token = await getCredentials();
 
-      const response = await fetch(`${SERVER_URL}/admin/order/${id}`, {
+      const response = await fetch(`${process.env.SERVER_URL}/admin/order/${id}`, {
         method: "PUT",
         headers: {"Content-Type": "application/json", Authorization: `Bearer ${token.accessToken}`},
         body: JSON.stringify(body)
@@ -79,7 +77,7 @@ const Orders = () => {
 
       const token = await getCredentials();
 
-      const response = await fetch(`${SERVER_URL}/admin/order/${id}`, {
+      const response = await fetch(`${process.env.SERVER_URL}/admin/order/${id}`, {
         method: "PUT",
         headers: {"Content-Type": "application/json", Authorization: `Bearer ${token.accessToken}`},
         body: JSON.stringify(body)
@@ -99,7 +97,7 @@ const Orders = () => {
       setLoading(true)
       
       const token = await getCredentials();
-      const response = await fetch(`${SERVER_URL}/admin/order/${status}`, {headers: {Authorization: `Bearer ${token.accessToken}`}})
+      const response = await fetch(`${process.env.SERVER_URL}/admin/order/${status}`, {headers: {Authorization: `Bearer ${token.accessToken}`}})
       const jsonData = await response.json()
       setLoading(false)
       setOrders(jsonData)
@@ -116,7 +114,7 @@ const Orders = () => {
       setLoading(true)
       
       const token = await getCredentials();
-      const response = await fetch(`${SERVER_URL}/admin/order/${status}`, {headers: {Authorization: `Bearer ${token.accessToken}`}})
+      const response = await fetch(`${process.env.SERVER_URL}/admin/order/${status}`, {headers: {Authorization: `Bearer ${token.accessToken}`}})
       const jsonData = await response.json()
       setLoading(false)
       setOrders(jsonData)
@@ -133,7 +131,7 @@ const Orders = () => {
       setLoading(true)
       
       const token = await getCredentials();
-      const response = await fetch(`${SERVER_URL}/admin/order/${status}`, {headers: {Authorization: `Bearer ${token.accessToken}`}})
+      const response = await fetch(`${process.env.SERVER_URL}/admin/order/${status}`, {headers: {Authorization: `Bearer ${token.accessToken}`}})
       const jsonData = await response.json()
       setLoading(false)
       setOrders(jsonData)
@@ -150,7 +148,7 @@ const Orders = () => {
       setLoading(true)
       
       const token = await getCredentials();
-      const response = await fetch(`${SERVER_URL}/admin/order/${status}`, {headers: {Authorization: `Bearer ${token.accessToken}`}})
+      const response = await fetch(`${process.env.SERVER_URL}/admin/order/${status}`, {headers: {Authorization: `Bearer ${token.accessToken}`}})
       const jsonData = await response.json()
       setLoading(false)
       setOrders(jsonData)

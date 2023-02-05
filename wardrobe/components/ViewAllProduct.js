@@ -8,8 +8,6 @@ import Animated, { FadeInUp, SlideInUp } from 'react-native-reanimated';
 
 import { useAuth0 } from 'react-native-auth0';
 
-import { SERVER_URL } from '@env';
-
 const ViewAllProduct = () => {
 
   const {getCredentials} = useAuth0();
@@ -43,7 +41,7 @@ const ViewAllProduct = () => {
 
   const getProducts = async () => {
     try {
-      const response = await fetch(`${SERVER_URL}/product`);
+      const response = await fetch(`${process.env.SERVER_URL}/product`);
       const jsonData = await response.json();
 
       setProducts(jsonData);
@@ -71,7 +69,7 @@ const ViewAllProduct = () => {
 
       const token = await getCredentials();
 
-      const response = await fetch(`${SERVER_URL}/admin/product/${id}`, {method: "DELETE", headers: {Authorization: `Bearer ${token.accessToken}`}})
+      const response = await fetch(`${process.env.SERVER_URL}/admin/product/${id}`, {method: "DELETE", headers: {Authorization: `Bearer ${token.accessToken}`}})
       setLoader(false)
       setModal(false)
       setProducts(products.filter((product) => product.product_id !== id))

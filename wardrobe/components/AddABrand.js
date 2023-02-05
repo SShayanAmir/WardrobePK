@@ -1,6 +1,8 @@
 import {View, Text, Pressable, Image, TextInput} from 'react-native';
 import React, {useState} from 'react';
 
+import Amplify, {Storage} from 'aws-amplify'
+
 // React Native Image Picker
 import {launchImageLibrary} from 'react-native-image-picker';
 
@@ -13,19 +15,19 @@ import { useAuth0 } from 'react-native-auth0';
 
 import Animated, { FadeInDown, FadeInUp, FadeOutDown, SlideInLeft, SlideInRight, SlideInUp } from 'react-native-reanimated';
 
-import { SERVER_URL } from '@env';
-
 const AddABrand = () => {
 
   const {getCredentials} = useAuth0();
 
-  const [galleryPhoto, setGalleryPhoto] = useState(null); 
   const [coverTitle, setCoverTitle] = useState(null);
+
+  const [fileType, setFileType] = useState()
+  const [fileURI, setFileURI] = useState()
 
   const [errorNoti, setErrorNoti] = useState(false)
   const [brandCreatedNoti, setBrandCreatedNoti] = useState(false)
 
-  disabledTerm = galleryPhoto === null || coverTitle === null
+  disabledTerm = fileURI === null || coverTitle === null
   
   const [toggleImage, setToggleImage] = useState(false)
 
@@ -35,9 +37,12 @@ const AddABrand = () => {
     mediaType: 'photo',
     includeBase64: true
   }
+
   const launchGallery = async () => {
     const result = await launchImageLibrary(options);
-    setGalleryPhoto(result.assets[0].uri);
+
+    setFileURI(result.assets[0].uri);
+    setFileType(result.assets[0].type)
     setToggleImage(true)
   }
 
@@ -50,11 +55,33 @@ const AddABrand = () => {
           setErrorNoti(false)
         }, 2500)
       } else {
-        const body = {coverTitle, galleryPhoto};
-
         const token = await getCredentials();
 
-        const response = await fetch(`${SERVER_URL}/admin/brand`, {
+        const photoResponse = await fetch(fileURI)
+
+        const blob = await photoResponse.blob()
+
+        console.log(blob)
+
+        const { url } = await fetch(`${process.env.SERVER_URL}/s3url`).then(res => res.json())
+        console.log(url)
+
+        await fetch(url, {
+          method: "PUT",
+          headers: {
+            "Content-Type": fileType
+          },
+          body: blob
+        })
+
+        const imageUrl = url.split('?')[0]
+        galleryPhoto = imageUrl
+        console.log(galleryPhoto)
+
+        const body = {coverTitle, galleryPhoto};
+
+        // Post Brand To Our Server
+        const response = await fetch(`${process.env.SERVER_URL}/admin/brand`, {
           method: "POST",
           headers: { "Content-Type": "application/json", Authorization: `Bearer ${token.accessToken}`},
           body: JSON.stringify(body)
@@ -82,7 +109,7 @@ const AddABrand = () => {
       {toggleImage ?
        <Pressable className='rounded-xl w-[140px] h-[140px] bg-white ml-2' style={{elevation: 15}} onPress={() => launchGallery()}>
        <View>
-          <Image source={{uri: galleryPhoto}} className='w-[140px] h-[140px] rounded-xl'/>
+          <Image source={{uri: fileURI}} className='w-[140px] h-[140px] rounded-xl'/>
        </View>
      </Pressable> 
       :

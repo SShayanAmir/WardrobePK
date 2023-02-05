@@ -3,7 +3,7 @@ CREATE DATABASE wardrobe;
 CREATE TABLE brand(
     brand_id SERIAL PRIMARY KEY,
     coverTitle VARCHAR(60),
-    galleryPhoto VARCHAR(5000)
+    galleryPhoto VARCHAR(1000)
 );
 
 CREATE TABLE product(

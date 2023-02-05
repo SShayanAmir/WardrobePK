@@ -16,8 +16,6 @@ import Animated, {FadeInUp, SlideInUp} from 'react-native-reanimated';
 
 import { useAuth0 } from 'react-native-auth0';
 
-import { SERVER_URL } from '@env';
-
 const ViewAllBrands = () => {
   const {getCredentials} = useAuth0();
 
@@ -34,7 +32,7 @@ const ViewAllBrands = () => {
 
   const getAllBrand = async () => {
     try {
-      const response = await fetch(`${SERVER_URL}/brand`);
+      const response = await fetch(`${process.env.SERVER_URL}/brand`);
       const jsonData = await response.json();
 
       setBrands(jsonData);
@@ -48,7 +46,7 @@ const ViewAllBrands = () => {
     try {
       const token = await getCredentials();
 
-      const response = fetch(`${SERVER_URL}/admin/brand/${id}`, {
+      const response = fetch(`${process.env.SERVER_URL}/admin/brand/${id}`, {
         method: 'DELETE',
         headers: {Authorization: `Bearer ${token.accessToken}`}
       });

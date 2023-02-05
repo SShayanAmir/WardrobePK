@@ -10,8 +10,6 @@ import Animated, { FadeIn, FadeOut, SlideInDown, SlideInUp } from 'react-native-
 
 import { useAuth0 } from 'react-native-auth0';
 
-import { SERVER_URL } from '@env';
-
 const TrackMyOrder = () => {
     const {getCredentials} = useAuth0();
 
@@ -30,7 +28,7 @@ const TrackMyOrder = () => {
             setLoading(true)
             setTrackingNumber(value)
 
-            const response = await fetch(`${SERVER_URL}/customer/order/${value}`)
+            const response = await fetch(`${process.env.SERVER_URL}/customer/order/${value}`)
             const jsonData = await response.json()
             
             setLoading(false)
@@ -56,7 +54,7 @@ const TrackMyOrder = () => {
             
             const token = await getCredentials();
 
-            const response = await fetch(`${SERVER_URL}/customer/order/${trackingNumber}`, {method: "PUT", headers: {"Content-Type": "application/json",  Authorization: `Bearer ${token.accessToken}`}, body: JSON.stringify(body)})
+            const response = await fetch(`${process.env.SERVER_URL}/customer/order/${trackingNumber}`, {method: "PUT", headers: {"Content-Type": "application/json",  Authorization: `Bearer ${token.accessToken}`}, body: JSON.stringify(body)})
             
             setOrder([])
             setLoading(false)
@@ -64,10 +62,6 @@ const TrackMyOrder = () => {
             console.error(err)
         }
       }
-
-    //   useEffect(() => {
-    //     getOrder()
-    //   }, [])
 
   return (
     <View>

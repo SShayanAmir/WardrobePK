@@ -31,8 +31,6 @@ import Animated, { SlideInLeft, SlideInRight, SlideInUp, SlideOutRight, BounceIn
 // REACT NATIVE OPEN ANYTHING
 import {Call} from 'react-native-openanything';
 
-import { SERVER_URL, AUDIENCE, ROLE_ACCESS_API } from '@env';
-
 const Navbar = () => {
   const {authorize, user, clearSession, getCredentials} = useAuth0();
   
@@ -151,7 +149,7 @@ const Navbar = () => {
   }
   
   // Check For Admin Role
-  const userRoles = user && user[`${ROLE_ACCESS_API}`];
+  const userRoles = user && user[`${process.env.ROLE_ACCESS_API}`];
   const userHasAccess = userRoles?.some(function (role) {
       return "admin" === role;
     })
@@ -159,7 +157,7 @@ const Navbar = () => {
     // Login Function
   const login = async () => {
     try {
-      await authorize({scope: "create:brand delete:brand edit:brand create:product delete:product edit:OrderStatus" ,audience: `${AUDIENCE}`});
+      await authorize({scope: "create:brand delete:brand edit:brand create:product delete:product edit:OrderStatus" ,audience: process.env.AUDIENCE});
     } catch (e) {
       console.log(e)
     }
@@ -228,7 +226,7 @@ const Navbar = () => {
   
   const getAllProducts = async () => {
     try {
-    const response = await fetch(`${SERVER_URL}/product`);
+    const response = await fetch(`${process.env.SERVER_URL}/product`);
     const JsonData = await response.json();
 
     setProducts(JsonData);
@@ -321,7 +319,7 @@ const Navbar = () => {
               <Animated.View entering={SlideInRight.duration(500)}>
                 <MaterialIcons name='shopping-cart' style={{color: "white", fontSize: 25}}/>
                 <View className='-right-2.5 -top-8'>
-                  <Text className='absolute text-white font-semibold bg-red-500 rounded-full px-1.5'>{cart.length}</Text>
+                  <Text className='absolute text-white font-semibold bg-red-500 rounded-full px-1.5'>{user ? cart?.length : 0}</Text>
                 </View>
               </Animated.View>
           </Pressable>

@@ -2,13 +2,17 @@ const express = require("express")
 const app = express();
 const cors = require("cors"); 
 const pool = require("./db");
+const s3 = require('./s3.js')
+
 require("dotenv").config();
 
 const { auth, requiredScopes } = require("express-oauth2-jwt-bearer");
 
-
 app.use(cors())
 app.use(express.json())
+
+
+                            // CHECK JWT TOKEN AND CHECK ALL REQUIRED SCOPES
 
 const checkJwt = auth({
     audience: `${process.env.AUDIENCE}`,
@@ -17,6 +21,12 @@ const checkJwt = auth({
   
 const checkPermissions = requiredScopes("create:brand create:brand delete:brand edit:brand create:product delete:product edit:OrderStatus", { customScopeKey: "permissions"})
 
+
+                                                    // S3
+app.get('/s3url', async (req,res) => {
+    const url = await s3.generateUploadURL()
+    res.send({url})
+})
                                             
                                                     // BRANDS
 app.post("/admin/brand", checkJwt, checkPermissions,  async (req, res) => {

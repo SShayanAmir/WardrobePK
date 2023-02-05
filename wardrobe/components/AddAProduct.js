@@ -18,15 +18,10 @@ import { useAuth0 } from 'react-native-auth0';
 
 import Animated, { FadeInDown, FadeInUp, FadeOutDown, SlideInDown, SlideInLeft, SlideInRight, SlideInUp } from 'react-native-reanimated';
 
-import { SERVER_URL } from '@env';
-
 const AddAProduct = () => {
 
   const {getCredentials} = useAuth0();
 
-  const [image1, setimage1] = useState(null);
-  const [image2, setimage2] = useState(null);
-  const [image3, setimage3] = useState(null);
   const [brand, setBrand] = useState(null);
   const [category, setCategory] = useState(null);
   const [title, setTitle] = useState(null);
@@ -34,7 +29,15 @@ const AddAProduct = () => {
   const [price, setPrice] = useState(null);
   const [quantity, setQuantity] = useState(1);
 
-  disableAddButton = image1 === null || image2 === null || image3 === null || brand === null || category === null || title === null || description === null || price === null
+  const [fileURI1, setFileURI1] = useState(null)
+  const [fileURI2, setFileURI2] = useState(null)
+  const [fileURI3, setFileURI3] = useState(null)
+
+  const [fileType1, setFileType1] = useState(null)
+  const [fileType2, setFileType2] = useState(null)
+  const [fileType3, setFileType3] = useState(null)
+
+  disableAddButton = setFileURI1 === null || setFileURI2 === null || setFileURI3 === null || brand === null || category === null || title === null || description === null || price === null
 
   const [notification, setNotification] = useState(false);
 
@@ -52,6 +55,47 @@ const AddAProduct = () => {
           setErrorNoti(false) 
         }, 2500)
       } else {
+        const photoResponse1 = await fetch(fileURI1)
+        const photoResponse2 = await fetch(fileURI2)
+        const photoResponse3 = await fetch(fileURI3)
+
+        const blob1 = await  photoResponse1.blob()
+        const blob2 = await  photoResponse2.blob()
+        const blob3 = await  photoResponse3.blob()
+
+        var { url } = await fetch(`${process.env.SERVER_URL}/s3url`).then(res => res.json())
+        await fetch(url, {
+          method: "PUT",
+          headers: {
+            "Content-Type": fileType1
+          },
+          body: blob1
+        })
+        const imageURL1 = url.split('?')[0]
+        const image1 = imageURL1
+
+        var { url } = await fetch(`${process.env.SERVER_URL}/s3url`).then(res => res.json())
+        await fetch(url, {
+          method: "PUT",
+          headers: {
+            "Content-Type": fileType2
+          },
+          body: blob2
+        })
+        const imageURL2 = url.split('?')[0]
+        const image2 = imageURL2
+
+        var { url } = await fetch(`${process.env.SERVER_URL}/s3url`).then(res => res.json())
+        await fetch(url, {
+          method: "PUT",
+          headers: {
+            "Content-Type": fileType3
+          },
+          body: blob3
+        })
+        const imageURL3 = url.split('?')[0]
+        const image3 = imageURL3
+        
         const body = {
           brand,
           title,
@@ -66,7 +110,7 @@ const AddAProduct = () => {
 
         const token = await getCredentials();
 
-        const response = await fetch(`${SERVER_URL}/admin/product`, {
+        const response = await fetch(`${process.env.SERVER_URL}/admin/product`, {
           method: 'POST',
           headers: {'Content-Type': 'application/json', Authorization: `Bearer ${token.accessToken}`},
           body: JSON.stringify(body),
@@ -90,19 +134,22 @@ const AddAProduct = () => {
 
   const launchGallery1 = async () => {
     const result = await launchImageLibrary(options);
-    setimage1(result.assets[0].uri);
+    setFileURI1(result.assets[0].uri);
+    setFileType1(result.assets[0].type)
     setToggleImage1(true);
   };
 
   const launchGallery2 = async () => {
     const result = await launchImageLibrary(options);
-    setimage2(result.assets[0].uri);
+    setFileURI2(result.assets[0].uri);
+    setFileType2(result.assets[0].type)
     setToggleImage2(true);
   };
 
   const launchGallery3 = async () => {
     const result = await launchImageLibrary(options);
-    setimage3(result.assets[0].uri);
+    setFileURI3(result.assets[0].uri);
+    setFileType3(result.assets[0].type)
     setToggleImage3(true);
   };
 
@@ -121,7 +168,7 @@ const AddAProduct = () => {
             <View className="w-[100px] h-[100px] ml-12">
               <Image
                 className="w-[100px] h-[100px] rounded-lg"
-                source={{uri: image1}}
+                source={{uri: fileURI1}}
               />
             </View>
           </Pressable>
@@ -152,7 +199,7 @@ const AddAProduct = () => {
             <View className="w-[100px] h-[100px] ml-2">
               <Image
                 className="w-[100px] h-[100px] rounded-lg"
-                source={{uri: image2}}
+                source={{uri: fileURI2}}
               />
             </View>
           </Pressable>
@@ -183,7 +230,7 @@ const AddAProduct = () => {
             <View className="w-[100px] h-[100px] ml-2">
               <Image
                 className="w-[100px] h-[100px] rounded-lg"
-                source={{uri: image3}}
+                source={{uri: fileURI3}}
               />
             </View>
           </Pressable>

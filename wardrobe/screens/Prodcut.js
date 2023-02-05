@@ -23,8 +23,6 @@ import MaterialIcons from 'react-native-vector-icons/MaterialIcons';
 // React Native Reanimated
 import Animated, { BounceIn, BounceOut, FadeIn, FadeInDown, FadeOut, FlipInXUp, FlipOutXUp, SlideInDown, SlideInLeft, SlideInRight, SlideInUp, SlideOutLeft, SlideOutRight, ZoomInDown, ZoomInEasyDown } from 'react-native-reanimated';
 
-import { SERVER_URL } from '@env';
-
 const Prodcut = ({navigation}) => {
   const {authorize, user} = useAuth0();
 
@@ -137,12 +135,12 @@ const Prodcut = ({navigation}) => {
   const getAllProducts = async () => {
       try {
         if(brand !== "") {
-          const response = await fetch(`${SERVER_URL}/product/brand/${brand}`);
+          const response = await fetch(`${process.env.SERVER_URL}/product/brand/${brand}`);
           const JsonData = await response.json(); 
     
           setProducts(JsonData);
         } else {
-          const response = await fetch(`${SERVER_URL}/product/category/${category}`);
+          const response = await fetch(`${process.env.SERVER_URL}/product/category/${category}`);
           const JsonData = await response.json(); 
     
           setProducts(JsonData);
