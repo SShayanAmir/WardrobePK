@@ -14,18 +14,40 @@ import PopularProducts from '../components/PopularProducts';
 import TopBrands from '../components/TopBrands';
 import ScrollToTopContext from '../context/ScrollToTop';
 
+import AsyncStorage from "@react-native-async-storage/async-storage"
+
 const Home = ({navigation}) => {
   const { setBrand, setCategory } = useContext(CategoryContext);
-  const { getCartList } = useContext(CartContext)
-  const { getFavoriteList } = useContext(FavoritesContext)
+  const { getCartList, setCart, setFirstTimeCheckerForCart} = useContext(CartContext)
+  const { getFavoriteList, setFavorite, setFirstTimeCheckerForFavorites } = useContext(FavoritesContext)
   const { scrollToTop, setScrollToTop } = useContext(ScrollToTopContext)
 
   const scroll = useRef(null)
 
   useEffect(() => {
     async function tempFunction(){
-      await getCartList()
-      await getFavoriteList()
+      
+      const data = await AsyncStorage.getItem("@firstTimeCheckerForCart")
+      const output = await JSON.parse(data)
+      setFirstTimeCheckerForCart(output)
+
+      if(output === null || output){
+        setCart([])
+      } else {
+        await getCartList()
+      }
+
+      const data2 = await AsyncStorage.getItem("@firstTimeCheckerForFavorites")
+      const output2 = await JSON.parse(data2)
+      setFirstTimeCheckerForCart(output2)
+
+      if(output2 === null || output2){
+        setFavorite([])
+        console.log("first one worked (Favorites)")
+      } else{
+        await getFavoriteList()
+        console.log("second one worked (Favorites)")
+      }
     }
     tempFunction();
     return () => {};

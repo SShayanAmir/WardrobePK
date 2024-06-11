@@ -1,10 +1,11 @@
-import { View, Text, Pressable, Image } from 'react-native'
-import React, { useContext } from 'react'
+import { View, Text, Pressable, Image, ScrollView } from 'react-native'
+import React, { useContext, memo } from 'react'
 
 import CategoryContext from '../context/CategoryContext';
 import { useNavigation } from '@react-navigation/native';
 import Animated, { SlideInDown, SlideInLeft } from 'react-native-reanimated';
 
+import { LazyLoadImage } from 'react-native-lazy-load-image';
 
 const Categories = () => {
     const navigation = useNavigation()
@@ -17,42 +18,71 @@ const Categories = () => {
         navigation.navigate("ProductPage")
     } 
 
-    const navigateToPartyWear = () => {
-        setCategory("Party Wear")
+    const navigateToStitched = () => {
+        setCategory("Stitched")
         setBrand("")
         navigation.navigate("ProductPage")
     }
 
-    const navigateToCasualWear = () => {
+    const navigateToUnstitched = () => {
         setCategory("Unstitched")
         setBrand("")
         navigation.navigate("ProductPage")
     } 
 
+    const navigateToPreorder = () => {
+        setCategory("Preorder")
+        setBrand("")
+        navigation.navigate("ProductPage")
+    } 
+
   return (
-    <Animated.View>
-        <Animated.View entering={SlideInDown.delay(300).duration(400)} className='absolute bg-gray-700 rounded-t-3xl h-[440px] inset-x-0 items-center mt-8' style={{elevation: 10}}>
-            <Animated.Text entering={SlideInLeft.delay(400).duration(500)} className='text-xl ml-3 mt-3 font-semibold text-white'>Categories</Animated.Text>
-        </Animated.View>
-        <Animated.View className='mt-24'>
-            <Animated.View entering={SlideInDown.delay(400).duration(600)}  className='items-center justify-between px-4' style={{flexDirection: "row", flexWrap: 'wrap'}}>
-                <Pressable className='items-center h-[195px] bg-white rounded-xl active:scale-105' style={{elevation: 10}} onPress={() => navigateToWeddingWear()}>
-                    <Image className='w-[170px] h-[160px] rounded-xl' resizeMode='contain' source={{uri: "https://tse2.mm.bing.net/th?id=OIP.iV8vPFX1D-pgOs5U-AK9qAHaII&pid=Api&P=0"}}/>
-                    <Text className='text-black font-bold text-[16px]'>Wedding Wear</Text>
+    <View className=''>
+        <Animated.View className="items-start ml-3">
+            <Animated.Text entering={SlideInLeft.duration(800)} className="text-xl font-semibold text-black">
+                Categories
+            </Animated.Text>
+        </Animated.View> 
+        <ScrollView className="w-full" horizontal showsHorizontalScrollIndicator={false}>
+                <Pressable onPress={() => navigateToPreorder()} className='pt-2 pb-14 px-2 scale-100 active:scale-105'>
+                    <View className='border border-transparent mt-2' style={{elevation: 25}}>
+                        <LazyLoadImage 
+                        className="h-[150px] w-[180px] rounded-lg"
+                        resizeMode="contain"
+                        source={{uri: "https://wardrobe-pk.s3.ap-northeast-1.amazonaws.com/image_83d1a27f-befa-4d97-80b4-5542607c9840-ezgif.com-webp-to-jpg-converter.jpg"}}/>
+                    </View>
                 </Pressable>
-                <Pressable className='items-center h-[195px] bg-white rounded-xl active:scale-105' style={{elevation: 10}} onPress={() => navigateToPartyWear()}>
-                    <Image className='w-[170px] h-[160px] rounded-xl' resizeMode='contain' source={{uri: "https://tse1.mm.bing.net/th?id=OIP.O5VciKVUKbtjLbA28GZ9NgHaLH&pid=Api&P=0"}}/>
-                    <Text className='text-black font-bold text-[16px]'>Party Wear</Text>
-                </Pressable>    
-            </Animated.View>  
-            <Animated.View entering={SlideInDown.delay(400).duration(600)} className='w-full items-center'>
-                <Pressable className='items-center mt-4 h-[195px] bg-white rounded-xl active:scale-105' style={{elevation: 15}} onPress={() => navigateToCasualWear()}>
-                    <Image className='w-[170px] h-[160px] rounded-xl' resizeMode='contain' source={{uri: "https://tse1.mm.bing.net/th?id=OIP.IQXMSVWq4dksa1SYdfDoAgHaKe&pid=Api&P=0"}}/>
-                    <Text className='text-black font-bold text-[16px]'>Unstitched</Text>
+                
+                <Pressable onPress={() => navigateToUnstitched()} className='pt-2 pb-12 px-2 scale-100 active:scale-105'>
+                    <View className='border border-transparent mt-2' style={{elevation: 25}}>
+                        <LazyLoadImage 
+                        className="h-[150px] w-[180px] rounded-lg"
+                        resizeMode="contain"
+                        source={{uri: "https://wardrobe-pk.s3.ap-northeast-1.amazonaws.com/Unstitched.jpg"}}/>
+                    </View>
                 </Pressable>
-            </Animated.View>
-        </Animated.View>
-    </Animated.View>
+                
+                <Pressable onPress={() => navigateToStitched()} className='pt-2 pb-14 px-2 scale-100 active:scale-105'>
+                    <View className='border border-transparent mt-2' style={{elevation: 25}}>
+                        <LazyLoadImage 
+                        className="h-[150px] w-[180px] rounded-lg"
+                        resizeMode="contain"
+                        source={{uri: "https://wardrobe-pk.s3.ap-northeast-1.amazonaws.com/Stitched.webp"}}/>
+                    </View>
+                </Pressable>
+
+                <Pressable onPress={() => navigateToWeddingWear()} className='pt-2 pb-14 px-2 scale-100 active:scale-105'>
+                    <View className='border border-transparent mt-2' style={{elevation: 25}}>
+                        <LazyLoadImage 
+                        className="h-[150px] w-[180px] rounded-lg"
+                        resizeMode="contain"
+                        source={{uri: "https://wardrobe-pk.s3.ap-northeast-1.amazonaws.com/Wedding.jpg"}}/>
+                    </View>
+                </Pressable>
+                
+                
+        </ScrollView>
+    </View>
   )
 }
 

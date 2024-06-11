@@ -6,6 +6,8 @@ const FavoritesContext = createContext();
 export function FavoritesHandler({children}) {
     const [favorite, setFavorite] = useState([]);
 
+    const [firstTimeCheckerForFavorites, setFirstTimeCheckerForFavorites] = useState(true)
+
     const addToFavorites = async (id, title, image1, image2, image3, price, category, brand, description, quantity) => {
             setFavorite(favorites => {
               if(favorites.some(item => item.id === id)) {
@@ -13,11 +15,14 @@ export function FavoritesHandler({children}) {
               }
               else {
                 setFavorite([...favorite, { id, title, image1, image2, image3, price, category, brand ,description, quantity}]);    
+                setFirstTimeCheckerForFavorites(false)
               }
             })
             const output = JSON.stringify(favorite)
+            const output2 = JSON.stringify(firstTimeCheckerForFavorites)
 
             await AsyncStorage.setItem("@FavoriteList", output)
+            await AsyncStorage.setItem("@firstTimeCheckerForFavorites", output2)
     }
 
     const getFavoriteList = async () => {
@@ -45,7 +50,7 @@ export function FavoritesHandler({children}) {
     }
     
     return(
-        <FavoritesContext.Provider value={{favorite, addToFavorites, removeFromFavorites, setFavorite, getFavoriteList}}>
+        <FavoritesContext.Provider value={{firstTimeCheckerForFavorites, setFirstTimeCheckerForFavorites, favorite, addToFavorites, removeFromFavorites, setFavorite, getFavoriteList}}>
             {children}
         </FavoritesContext.Provider>
     )

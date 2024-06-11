@@ -1,4 +1,4 @@
-package com.wardrobe.newarchitecture.modules;
+package com.wardrobepk.newarchitecture.modules;
 
 import com.facebook.jni.HybridData;
 import com.facebook.react.ReactPackage;

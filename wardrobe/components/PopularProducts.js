@@ -1,7 +1,11 @@
-import { View, Text, ScrollView, Pressable, Image, FlatList, SafeAreaView, Modal, StyleSheet } from 'react-native'
+import { View, Text, ScrollView, Pressable, useWindowDimensions, Modal, StyleSheet, ActivityIndicator } from 'react-native'
 import React, { useContext, useEffect, useState } from 'react'
 
 import { Table, TableWrapper, Row, Rows} from 'react-native-table-component';
+
+import {OptimizedFlatList} from 'react-native-optimized-flatlist'
+
+import {FlashList} from "@shopify/flash-list"
 
 // Context
 import CategoryContext from '../context/CategoryContext';
@@ -20,11 +24,18 @@ import Pinchable from 'react-native-pinchable';
 import {useAuth0} from 'react-native-auth0';
 
 // REACT NATIVE REANIMATED
-import Animated, { BounceIn, BounceOut, FlipInXUp, FlipOutXUp, SlideInDown, SlideInLeft, SlideInRight, SlideInUp, SlideOutRight, useAnimatedStyle, withRepeat, withTiming} from 'react-native-reanimated';
+import Animated, { BounceIn, BounceOut, FadeInDown, FlipInXUp, FlipOutXUp, SlideInDown, SlideInLeft, SlideInRight, SlideInUp, SlideOutRight, useAnimatedStyle, withRepeat, withTiming, ZoomInEasyDown} from 'react-native-reanimated';
 import ScrollToTopContext from '../context/ScrollToTop';
+
+import { LazyLoadImage } from 'react-native-lazy-load-image';
+
+import arrayShuffle from 'array-shuffle';
+
 
 const PopularProducts = () => {
   const {authorize, user} = useAuth0();
+
+  const {width} = useWindowDimensions();
 
   const { addToCart, cart } = useContext(CartContext)
   const { addToFavorites } = useContext(FavoritesContext)
@@ -54,8 +65,6 @@ const PopularProducts = () => {
   const [image1, setImage1] = useState(true)
   const [image2, setImage2] = useState(false)
   const [image3, setImage3] = useState(false)
-
-  const numColumns = 2
 
   const [tableHead, setTableHead] = useState([
     'Size',
@@ -123,6 +132,14 @@ const PopularProducts = () => {
     setXLargeActiveStatus(true)
   }
 
+  const setSizeToUnstitched = () => {
+    setSize("Unstitched")
+    setLargeActiveStatus(false)
+    setSmallActiveStatus(false)
+    setMediumActiveStatus(false)
+    setXLargeActiveStatus(true)
+  }
+
   const ProductModalClose = () => {
     setModal(false)
     setSize(null)
@@ -153,15 +170,22 @@ const PopularProducts = () => {
     }
 
     const getProducts = async () => {
-        const response = await fetch(`${process.env.SERVER_URL}/product`);
+        const response = await fetch(`${process.env.SERVER}/product`);
         const JsonData = await response.json(); 
   
-        setProducts(JsonData);
+        const shuffledData = await arrayShuffle(JsonData)
+        setProducts(shuffledData);
     }
 
     useEffect(() => {
-        getProducts()
-    }, [])
+      async function tempFunction(){
+        setLoading(true)
+        await getProducts();
+        setLoading(false)
+      }
+      tempFunction();
+      return () => {};
+    }, []);
 
     const openModal = (product_id, title, brand, description, price, image1, image2, image3, category, quantity) => {
         setValue({product_id: product_id, title: title, brand: brand, description: description, price: price, image1: image1, image2: image2, image3: image3, category: category, quantity: quantity})
@@ -199,47 +223,51 @@ const PopularProducts = () => {
         }
       }
 
-      const animatedStyles = useAnimatedStyle(() => ({
-        transform: [
-            { 
-                translateY: withRepeat(withTiming(-15), -1, true)
-            },
-        ]
-      }))
-
   return (
     <View>
-        <View className='absolute bg-gray-700 mt-10 inset-x-0  rounded-t-3xl items-center mb-40' style={{elevation: 75, height: height2}}>
+        <View className='absolute bg-gray-700 mt-10 inset-x-0 rounded-t-3xl items-center mb-40' style={{elevation: 75, height: height2}}>
             <Text className='text-white font-semibold text-xl mt-5'>What You Might Like</Text>
         </View>
-        <SafeAreaView>
-            <FlatList initialNumToRender={4} style={{height: height}} className={scrollToTop ?  `mx-1 mt-24` :  `mx-1 mt-24`} numColumns={2} keyExtractor={item => {return item.product_id}} data={products} renderItem={(product) => {
-                    return(
-                        <View className='ml-1.5'>
-                            <Pressable className='bg-white active:bg-slate-200 w-[180px] h-[260px] rounded-xl py-6 mt-2 items-center' onPress={() => openModal(product.item.product_id, product.item.title, product.item.brand, product.item.description, product.item.price, product.item.image1, product.item.image2, product.item.image3, product.item.category, product.item.quantity)}>
-                                <Image className="w-[140px] h-[140px] rounded-lg" source={{uri: product.item.image1}} />
-                                <View className='mt-1'>
-                                    <Text numberOfLines={1} className='text-gray-600 font-medium text-lg w-[140px]'>{product.item.title}</Text>
-                                    <Text className='text-red-600 font-semibold'>Rs. {product.item.price}</Text>
-                                </View>
-                                <View className='absolute items-end justify-end right-3 bottom-2'>
-                                    <Text className='text-gray-400 font-semibold text-[11px]'>{product.item.category}</Text>
-                                    <Text className='text-gray-500 font-semibold text-[13px]'>{product.item.brand}</Text>
-                                </View>
-                            </Pressable>
-                        </View>
-                    )
-                }}/>
-        </SafeAreaView>
+        <View>
+          {loading ?
+           <View className='mt-[110px]' style={{height: height}}>
+                <View className='mt-[150px]'>
+                  <ActivityIndicator size="large"/>
+                </View>
+          </View> 
+                :
+          <View className='mt-[110px]' style={{height: height}}>
+              <FlashList estimatedItemSize={100} className={scrollToTop ?  `mx-1 mt-24` :  `mx-1 mt-24`} numColumns={width > 590 ? 3 : 2} keyExtractor={item => {return item.product_id}} data={products} renderItem={(product) => {
+                      return(
+                          <View className='ml-1.5'>
+                            {product.item.category !== "Out Of Stock" && 
+                            <View>
+                              <Pressable className='bg-white active:bg-slate-200 w-[180px] h-[260px] rounded-xl py-6 mt-2 items-center' onPress={() => openModal(product.item.product_id, product.item.title, product.item.brand, product.item.description, product.item.price, product.item.image1, product.item.image2, product.item.image3, product.item.category, product.item.quantity)}>
+                                  <LazyLoadImage className="w-[140px] h-[140px] rounded-lg" source={{uri: product.item.image1}} />
+                                  <View className='mt-1'>
+                                      <Text numberOfLines={1} className='text-gray-600 font-medium text-lg w-[140px]'>{product.item.title}</Text>
+                                      <Text className='text-red-600 font-semibold'>Rs. {product.item.price}</Text>
+                                  </View>
+                                  <View className='absolute items-end justify-end right-3 bottom-2'>
+                                      <Text className='text-gray-400 font-semibold text-[11px]'>{product.item.category}</Text>
+                                      <Text className='text-gray-500 font-semibold text-[13px]'>{product.item.brand}</Text>
+                                  </View>
+                              </Pressable>
+                            </View>}
+                          </View>
+                      )
+                  }}/>
+          </View>}
+        </View>
 
-        <Animated.View className='w-screen pb-[75px] -top-10'>
+        <View className='w-screen pb-[75px] -top-10'>
             {height !== 3487.5 && loadMore && 
             <Pressable className='inset-x-0 rounded-t-3xl bottom-1 items-center py-2 bg-gray-500 opacity-90' onPress={() => LoadMoreHandler()}>
-                <Animated.View>
+                <View>
                     <Entypo name='chevron-down' style={{color: "white", fontSize: 35}} />
-                </Animated.View>
+                </View>
             </Pressable>}
-        </Animated.View>
+        </View>
 
                                                    {/* Modal For Product */}
         <Modal onRequestClose={() => ProductModalClose()} transparent={true} animationType="slide" visible={modal}>
@@ -293,65 +321,74 @@ const PopularProducts = () => {
               </Pressable>
             </Animated.View>
             
-            <View className='border-b-2 border-gray-300 ml-2 mr-4'>
-                <View className='flex-row'>
+            <View className='border-b-2 border-gray-300 mr-4'>
+                <Animated.View className='flex-row'>
+
+                  <Animated.View entering={SlideInLeft.delay(300).duration(500)}>
                                                                   {/* Image 1 */}
-                  {image1 && <Pressable className='ml-5 mt-10' onPress={() => setImageViewerModal(true)}>
-                      <Animated.Image entering={SlideInLeft.delay(300).duration(500)} className='w-[150px] h-[150px] rounded-lg' source={{uri: value.image1}} />
-                  </Pressable>}
-                                                                  {/* Image 2 */}
-                  {image2 && <Pressable className='ml-5 mt-10' onPress={() => setImageViewerModal(true)}>
-                      <Image className='w-[150px] h-[150px] rounded-lg' source={{uri: value.image2}} />
-                  </Pressable>}  
-                                                                  {/* Image 3 */}
-                  {image3 && <Pressable className='ml-5 mt-10' onPress={() => setImageViewerModal(true)}>
-                      <Image className='w-[150px] h-[150px] rounded-lg' source={{uri: value.image3}} />
-                  </Pressable>}
+                    {image1 && <Pressable className='ml-5 mt-10' onPress={() => setImageViewerModal(true)}>
+                        <LazyLoadImage className='w-[160px] h-[170px] rounded-lg' source={{uri: value.image1}} />
+                    </Pressable>}
+                                                                    {/* Image 2 */}
+                    {image2 && <Pressable className='ml-5 mt-10' onPress={() => setImageViewerModal(true)}>
+                        <LazyLoadImage className='w-[160px] h-[170px] rounded-lg' source={{uri: value.image2}} />
+                    </Pressable>}  
+                                                                    {/* Image 3 */}
+                    {image3 && <Pressable className='ml-5 mt-10' onPress={() => setImageViewerModal(true)}>
+                        <LazyLoadImage className='w-[160px] h-[170px] rounded-lg' source={{uri: value.image3}} />
+                    </Pressable>}
+                  </Animated.View>
 
                   <Animated.View className='mt-10 ml-6'>
                       <Animated.Text numberOfLines={2} entering={SlideInRight.delay(500).duration(500)} className='text-black font-bold text-lg w-[170px]'>{value.title}</Animated.Text>
                       <Animated.Text entering={SlideInRight.delay(500).duration(500)} className='text-red-500 font-bold text-[15px]'>Rs. {value.price}</Animated.Text>
                       <Animated.View entering={SlideInRight.delay(700).duration(500)} className='items-end justify-end mr-6 mt-10'>
-                      <Text className='text-gray-500 text-[11px]'>{value.category}</Text>
+                      <Text className='text-gray-500 text-[11px] mt-4'>{value.category}</Text>
                       <Text className='text-gray-500 font-medium text-[13px]'>{value.brand}</Text>
                       </Animated.View>
                   </Animated.View>
-                </View>
+                </Animated.View>
                                                               {/* Image Selector */}
                 <Animated.View entering={SlideInLeft.delay(300).duration(500)} className='flex-row mt-4 ml-8 pb-4'>
                   <Pressable className='bg-gray-200 rounded-full mx-2 active:bg-gray-400' onPress={() => toggleImage1()}>
-                      <Text className='text-black font-bold text-lg px-2'>1</Text>
+                      <Text className='text-black font-semibold text-[17px] px-2'>1</Text>
                   </Pressable>
                   <Pressable className='bg-gray-200 rounded-full mx-2 active:bg-gray-400' onPress={() => toggleImage2()}>
-                      <Text className='text-black font-bold text-lg px-2'>2</Text>
+                      <Text className='text-black font-semibold text-[17px] px-2'>2</Text>
                   </Pressable>
                   <Pressable className='bg-gray-200 rounded-full mx-2 active:bg-gray-400' onPress={() => toggleImage3()}>
-                      <Text className='text-black font-bold text-lg px-2'>3</Text>
+                      <Text className='text-black font-semibold text-[17px] px-2'>3</Text>
                   </Pressable>
                 </Animated.View>
             </View>
                                                             {/* Size Chart Button */}
-            <Animated.View entering={SlideInLeft.delay(500).duration(500)}>
-              <Pressable className='mt-8 ml-6 bg-gray-700 active:bg-black w-[125px] items-center justify-center rounded-xl' onPress={() => setSizeChartModal(true)}>
+            {value.category === "Stitched" && <Animated.View entering={SlideInLeft.delay(500).duration(500)}>
+              <Pressable className='mt-6 ml-6 bg-gray-700 active:bg-black w-[125px] items-center justify-center rounded-xl' onPress={() => setSizeChartModal(true)}>
                 <Text className='text-white font-bold text-lg p-3'>Size Chart</Text>
               </Pressable>
-            </Animated.View>
+            </Animated.View>}
 
                                                                   {/* Sizes */}
             <Animated.View entering={SlideInLeft.delay(500).duration(500)} className='flex-row ml-3 mt-5'>
-              <Pressable className={largeActiveStatus ? 'bg-black border border-gray-300 rounded-full ml-3' : 'border border-gray-300 rounded-full ml-3'} onPress={() => setSizeToLarge()}>
-                <Text className={largeActiveStatus ? 'text-white font-bold px-2.5 py-1' : 'text-black font-bold px-2.5 py-1'}>L</Text>
-              </Pressable>
-              <Pressable className={mediumActiveStatus ? 'bg-black border border-gray-300 rounded-full ml-3' : 'border border-gray-300 rounded-full ml-3'} onPress={() => setSizeToMedium()}>
-                <Text className={mediumActiveStatus ? 'text-white font-bold px-2.5 py-1' : 'text-black font-bold px-2.5 py-1'}>M</Text>
-              </Pressable>
-              <Pressable className={smallActiveStatus ? 'bg-black border border-gray-300 rounded-full ml-3' : 'border border-gray-300 rounded-full ml-3'} onPress={() => setSizeToSmall()}>
-                <Text className={smallActiveStatus ? 'text-white font-bold px-2.5 py-1' : 'text-black font-bold px-2.5 py-1'}>S</Text>
-              </Pressable>
-              <Pressable className={xLargeActiveStatus ? 'bg-black border border-gray-300 rounded-full ml-3' : 'border border-gray-300 rounded-full ml-3'} onPress={() => setSizeToXLarge()}>
-                <Text className={xLargeActiveStatus ? 'text-white font-bold px-2 py-1' : 'text-black font-bold px-2 py-1'}>XL</Text>
-              </Pressable>
-
+              {value.category === "Stitched" ? <View className="flex-row">
+                <Pressable className={largeActiveStatus ? 'bg-black border border-gray-300 rounded-full ml-3' : 'border border-gray-300 rounded-full ml-3'} onPress={() => setSizeToLarge()}>
+                  <Text className={largeActiveStatus ? 'text-white font-bold px-2.5 py-1' : 'text-black font-bold px-2.5 py-1'}>L</Text>
+                </Pressable>
+                <Pressable className={mediumActiveStatus ? 'bg-black border border-gray-300 rounded-full ml-3' : 'border border-gray-300 rounded-full ml-3'} onPress={() => setSizeToMedium()}>
+                  <Text className={mediumActiveStatus ? 'text-white font-bold px-2.5 py-1' : 'text-black font-bold px-2.5 py-1'}>M</Text>
+                </Pressable>
+                <Pressable className={smallActiveStatus ? 'bg-black border border-gray-300 rounded-full ml-3' : 'border border-gray-300 rounded-full ml-3'} onPress={() => setSizeToSmall()}>
+                  <Text className={smallActiveStatus ? 'text-white font-bold px-2.5 py-1' : 'text-black font-bold px-2.5 py-1'}>S</Text>
+                </Pressable>
+                <Pressable className={xLargeActiveStatus ? 'bg-black border border-gray-300 rounded-full ml-3' : 'border border-gray-300 rounded-full ml-3'} onPress={() => setSizeToXLarge()}>
+                  <Text className={xLargeActiveStatus ? 'text-white font-bold px-2 py-1' : 'text-black font-bold px-2 py-1'}>XL</Text>
+                </Pressable>
+              </View>:
+              <View>
+                <Pressable className={xLargeActiveStatus ? 'bg-black border border-gray-300 rounded-full ml-3' : 'border border-gray-300 rounded-full ml-3'} onPress={() => setSizeToUnstitched()}>
+                  <Text className={xLargeActiveStatus ? 'text-white font-bold px-2 py-1' : 'text-black font-bold px-2 py-1'}>Unstitched</Text>
+                </Pressable>
+              </View>}
                                                         {/* Need to choose a SIZE NOTI ALERT */}
               {sizeAlert && <Animated.View entering={BounceIn.delay(200).duration(200)} exiting={BounceOut.duration(500)} style={{backgroundColor: "red"}} className='absolute right-1 -top-1 rounded-xl items-center justify-center'>
                 <View className='absolute -left-4'>
@@ -361,8 +398,15 @@ const PopularProducts = () => {
               </Animated.View>}
             </Animated.View>
 
-            <Animated.View entering={SlideInDown.delay(500).duration(500)} className='items-center justify-center mt-52'>
-              {loading ? <Pressable disabled={true} className='flex-row items-center justify-center bg-blue-700 w-[250px] h-[60px] rounded-3xl'><ActivityIndicator size='large'/></Pressable> : <Pressable className='flex-row items-center justify-center bg-blue-700 active:bg-blue-800 w-[250px] h-[60px] rounded-3xl' onPress={() => shoppingCartHandler(value.product_id, value.title, value.image1, value.price, value.quantity, value.brand)}>
+            <Animated.View entering={FadeInDown.delay(600).duration(500)}>
+              <Text className='ml-7 mt-2 text-gray-600 font-bold text-xl'>Description</Text>
+              <ScrollView className='ml-7 mr-3 mt-1 h-[220px]'>
+                <Text className='text-gray-400 font-medium ml-2'>{value.description}</Text>
+              </ScrollView>
+            </Animated.View>
+
+            <Animated.View entering={SlideInDown.delay(500).duration(500)} className={value.category === "Stitched" ? 'items-center justify-center mt-5' : 'items-center justify-center mt-16'}>
+              {loading ? <Pressable style={{elevation: 25}} disabled={true} className='flex-row items-center justify-center bg-blue-700 w-[250px] h-[60px] rounded-3xl'><ActivityIndicator size='large'/></Pressable> : <Pressable style={{elevation: 10}} className='flex-row items-center justify-center bg-blue-700 active:bg-blue-800 w-[250px] h-[60px] rounded-3xl' onPress={() => shoppingCartHandler(value.product_id, value.title, value.image1, value.price, value.quantity, value.brand)}>
                 <Text className='text-white text-lg font-bold mt-0.5 ml-2'>ADD TO CART</Text>
                 <FontAwesome5 name='shopping-cart' style={{color: "white", fontSize: 20, marginLeft: 10}}/>
               </Pressable>}
@@ -373,20 +417,20 @@ const PopularProducts = () => {
                                                    {/* PINCHABLE IMAGES MODALL */}
                                                    <Modal onRequestClose={() => setImageViewerModal(false)} animationType='slide' visible={imageViewerModal} transparent={false}>
           <View className='items-center justify-center w-full h-full bg-white'>
-            <Pressable className='-right-[160px] top-4 active:bg-gray-200 rounded-full' onPress={() => setImageViewerModal(false)}>
+            <Pressable className='-right-[160px] md:-right-[250px] top-4 active:bg-gray-200 rounded-full' onPress={() => setImageViewerModal(false)}>
               <Entypo name='cross' style={{color: "black", fontSize: 35, padding: 2}}/>
             </Pressable>
-            <ScrollView className='top-1/2' horizontal pagingEnabled showsHorizontalScrollIndicator={false}>
-              {<Pinchable className='mr-6 ml-4'>
-                  <Image className='rounded-xl w-[350px] h-[350px]' source={{uri: value.image1}}/>
+            <ScrollView className='top-1/2 md:top-[150px]' horizontal pagingEnabled showsHorizontalScrollIndicator={false}>
+              {<Pinchable className='mr-6 ml-4 md:ml-[85px]'>
+                  <LazyLoadImage className='rounded-xl w-[350px] md:w-[450px] h-[440px] md:h-[560px]' source={{uri: value.image1}}/>
               </Pinchable>}
 
-              {<Pinchable className='ml-3'>
-                  <Image className='rounded-xl w-[350px] h-[350px]' source={{uri: value.image2}}/>
+              {<Pinchable className='ml-3 md:ml-[120px]'>
+                  <LazyLoadImage className='rounded-xl w-[350px] md:w-[450px] h-[440px] md:h-[560px]' source={{uri: value.image2}}/>
               </Pinchable>}
 
-              {<Pinchable className='ml-8 w-[370px]'>
-                  <Image className='rounded-xl w-[350px] h-[350px]' source={{uri: value.image3}}/>
+              {<Pinchable className='ml-8 md:ml-[110px] mr-[80px]'>
+                  <LazyLoadImage className='rounded-xl w-[350px] md:w-[450px] h-[440px] md:h-[560px]' source={{uri: value.image3}}/>
               </Pinchable>}
             </ScrollView>
           </View>

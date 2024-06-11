@@ -5,19 +5,23 @@ import {
   Pressable,
   FlatList,
 } from 'react-native';
-import React, {useEffect, useState} from 'react';
+import React, {useEffect, useState, memo} from 'react';
 
 import Animated, { SlideInLeft, ZoomInEasyDown } from 'react-native-reanimated';
+
+import { LazyLoadImage } from 'react-native-lazy-load-image';
+import arrayShuffle from 'array-shuffle';
 
 const Brands = props => {
   const [brands, setBrands] = useState([]);
 
   const getAllBrands = async () => {
     try {
-      const response = await fetch(`${process.env.SERVER_URL}/brand`);
+      const response = await fetch(`${process.env.SERVER}/brand`);
       const JsonData = await response.json();
 
-      setBrands(JsonData);
+      const shuffledData = await arrayShuffle(JsonData)
+      setBrands(shuffledData);
     } catch (err) {
       console.error(err.message);
     }
@@ -49,23 +53,20 @@ const Brands = props => {
         data={brands}
         renderItem={brand => { 
           return ( 
-            <Animated.View entering={ZoomInEasyDown.duration(800)}>
+            <View>
               <Pressable
                 style={{elevation: 25}}
-                className="items-center ml-3 mr-2 mt-3 mb-12 active:scale-105 rounded-xl h-[140px]"
+                className="items-center ml-3 mr-2 mt-3 mb-12 bg-transparent active:scale-105 rounded-xl "
                 onPress={() =>
                   props.navigateToProductScreen(brand.item.covertitle)
                 }
                 >
-                <Image
+                <LazyLoadImage 
                   className="w-[180px] h-[150px] rounded-lg"
                   source={{uri: brand.item.galleryphoto}}
                 />
-                {/* <Text numberOfLines={1} className="absolute top-0 right-2 text-gray-700 font-semibold text-lg">
-                  {brand.item.covertitle}
-                </Text> */}
               </Pressable>
-            </Animated.View>
+            </View>
           );
         }}
       />

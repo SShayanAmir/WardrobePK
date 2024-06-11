@@ -1,4 +1,4 @@
-package com.wardrobe.newarchitecture.components;
+package com.wardrobepk.newarchitecture.components;
 
 import com.facebook.jni.HybridData;
 import com.facebook.proguard.annotations.DoNotStrip;

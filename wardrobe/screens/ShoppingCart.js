@@ -19,7 +19,7 @@ import { useAuth0 } from 'react-native-auth0';
 
 import Clipboard from '@react-native-clipboard/clipboard'
 
-import Animated, { FadeInDown, FadeOutDown, SlideInDown, SlideInLeft, SlideInRight, SlideInUp, ZoomInEasyDown } from 'react-native-reanimated';
+import Animated, { FadeInDown, FadeOutDown, SlideInDown, SlideInLeft, SlideInRight, SlideInUp, SlideOutLeft, SlideOutRight, ZoomInEasyDown } from 'react-native-reanimated';
 
 const ShoppingCart = ({navigation}) => {
 
@@ -40,6 +40,7 @@ const ShoppingCart = ({navigation}) => {
   const [createdAtDateStore, setCreatedAtDateStore] = useState("")
 
   const [paymentMethod, setPaymentMethod] = useState("Cash On Delivery(COD)")
+  const [paymentMethodTrigger, setPaymentMethodTrigger] = useState(false)
   
   const [shippingDetails, setShippingDetails] = useState(false)
   const [deliveryLocationModal, setDeliveryLocationModal] = useState(false)
@@ -75,6 +76,12 @@ const ShoppingCart = ({navigation}) => {
     setShippingDetails(true)
     setDeliveryLocationModal(false)
   }
+  const PaymentMethodTrigger = () => {
+    setPaymentMethodTrigger(true)
+    setTimeout(() => {
+      setPaymentMethodTrigger(false)
+    }, 2500)
+  }
   
   const Checkout = async () => {
     try {
@@ -93,14 +100,22 @@ const ShoppingCart = ({navigation}) => {
       
       const token = await getCredentials();
 
-      const response = await fetch(`${process.env.SERVER_URL}/customer/order`, {
+      const response = await fetch(`${process.env.SERVER}/customer/order`, {
         method: "POST",
         headers: {"Content-Type": "application/json", Authorization: `Bearer ${token.accessToken}`},
         body: JSON.stringify(body)
       })
 
       setLoading(false)
-      setCheckoutCompleteModal(true)
+      console.log(response.status)
+      
+      if(response.status === 200){
+        setCheckoutCompleteModal(true)    
+      } else {
+        alert("Couldn't verify your account, try logging in again!")
+      }
+
+      
     } catch (err) {
       console.error(err)
     }
@@ -140,7 +155,7 @@ const ShoppingCart = ({navigation}) => {
           subTotal += carts.quantity * carts.price
           grandTotal = subTotal + shippingTax;
           return(
-          <Animated.View entering={ZoomInEasyDown.delay(400)} key={carts.id} className='flex-row mt-[10px] ml-2'>
+          <View key={carts.id} className='flex-row mt-[10px] ml-2'>
             <View>
               <Image
                 className="rounded-lg w-[105px] h-[105px]"
@@ -173,7 +188,7 @@ const ShoppingCart = ({navigation}) => {
                 <MaterialCommunityIcons name='delete' style={{color: "red", fontSize: 22, padding: 5}}/>
               </Pressable>
             </View>
-          </Animated.View>
+          </View>
           )
           })}
       </ScrollView>}
@@ -206,7 +221,7 @@ const ShoppingCart = ({navigation}) => {
           <Text className='text-gray-700 text-xl font-semibold'>Payment  Method</Text>
           <Text className='text-gray-400 font-bold mt-1 ml-2'>(Required)</Text>
         </View>
-        <Pressable className='flex-row active:bg-gray-200 rounded-lg mt-2 pl-2 pb-5 mr-2'>
+        <Pressable onPress={() => PaymentMethodTrigger()} className='flex-row active:bg-gray-200 rounded-lg mt-2 pl-2 pb-5 mr-2'>
           <View className='bg-white w-[45px] rounded-xl mt-4'>
             <MaterialIcons name='payment' style={{color: "blue", fontSize: 25, padding: 10}}/>
           </View>
@@ -217,12 +232,25 @@ const ShoppingCart = ({navigation}) => {
           <View className='absolute right-2 mt-6'>
             <Entypo name='chevron-right' style={{color: "black", fontSize: 30}}/>
           </View>
+          {paymentMethodTrigger && 
+            <Animated.View entering={FadeInDown.duration(700)} exiting={SlideOutLeft.duration(300)} style={{backgroundColor: "red"}} className="absolute rounded-2xl inset-x-4 -top-5">
+              <View className='absolute mt-6'>
+                <Entypo name='triangle-down' style={{color: "red", fontSize: 30}}/>
+              </View>
+              <View className='items-center justify-center'>
+                <Text className='text-white font-black text-[16px] py-2'>Sorry, as of now only COD is available</Text>
+              </View>
+            </ Animated.View>
+          }
         </Pressable>
       </View>
       <View className='ml-4 mt-2'>
         <Text className='text-gray-600 text-xl font-semibold'>Order Info</Text>
         <View className='flex-row justify-between mt-1'>
-          <Text className='text-gray-400'>Subtotal</Text>
+          <View className='flex-row'>
+            <Text className='text-gray-400'>Subtotal</Text>
+            <Text className='text-red-500 font-black text-[9px] mt-[3px] ml-0.5'>(10% Advance Payment Required For Stitched Suits Only)</Text>
+          </View>
           <Text className='text-gray-400 mr-4'>{subTotal}</Text>
         </View>
         <View className='flex-row justify-between mt-1'>
@@ -240,9 +268,11 @@ const ShoppingCart = ({navigation}) => {
           <ActivityIndicator size={"large"} style={{padding: 10}}/>
         </View>
         :
-        <Pressable disabled={disabledCheckoutButton} className={disabledCheckoutButton ? 'bg-blue-500 transition-all active:bg-blue-800 items-center rounded-3xl' : 'bg-blue-700 transition-all active:bg-blue-800 items-center rounded-3xl'} onPress={() => setConfirmationModal(true)}>
-          {cart.length === 0 ? <Text className='p-3 text-white font-bold text-lg'>Checkout  (Rs. 0)</Text> : <Text className='p-3 text-white font-bold text-lg'>Checkout  (Rs. {subTotal + shippingTax})</Text>}
-        </Pressable>}
+        <View>
+          <Pressable style={{elevation: 25}} disabled={disabledCheckoutButton} className={disabledCheckoutButton ? 'bg-blue-500 transition-all active:bg-blue-800 items-center rounded-3xl' : 'bg-blue-700 transition-all active:bg-blue-800 items-center rounded-3xl'} onPress={() => setConfirmationModal(true)}>
+            {cart.length === 0 ? <Text className='p-3 text-white font-bold text-lg'>Checkout  (Rs. 0)</Text> : <Text className='p-3 text-white font-bold text-lg'>Checkout  (Rs. {subTotal + shippingTax})</Text>}
+          </Pressable>
+        </View>}
       </View>
 
                                                     {/* Checkout Complete Modal */}
@@ -300,11 +330,11 @@ const ShoppingCart = ({navigation}) => {
 
                                                   {/* Order Confirmation Modal */}
       <Modal onRequestClose={() => setConfirmationModal(false)} visible={confirmationModal} transparent={true} animationType="slide">
-        <View className='absolute bg-white inset-x-6 top-[300px] h-[200px] rounded-xl' style={{elevation: 50}}>
+        <View className='absolute bg-white inset-x-6 md:inset-x-14 top-[300px] h-[200px] rounded-xl' style={{elevation: 50}}>
           <View className='items-center justify-center mt-[40px]'>
             <Text className='text-black font-bold text-xl'>Confirm Checkout?</Text>
           </View>
-          <View className='flex-row mt-[25px] ml-9'>
+          <View className='flex-row mt-[25px] ml-9 md:ml-28'>
             <Pressable className='items-center justify-center bg-red-500 active:bg-red-600 w-[120px] rounded-lg' onPress={() => setConfirmationModal(false)}>
               <Text className='text-white font-bold text-xl p-5'>Cancel</Text>
             </Pressable>
@@ -314,6 +344,8 @@ const ShoppingCart = ({navigation}) => {
           </View>
         </View>
       </Modal>
+                                                {/* Payment Method Availability */}
+      
       
                                                 {/* Modal for Shipping Details */}
       <Modal onRequestClose={() => setDeliveryLocationModal(false)} transparent={true} animationType='slide' visible={deliveryLocationModal}>
@@ -332,64 +364,64 @@ const ShoppingCart = ({navigation}) => {
           </TouchableWithoutFeedback>
           
           <Animated.View entering={SlideInUp.delay(500).duration(600)} className='ml-2 mt-16'>
-            <View className='absolute z-10 mt-2 ml-2'>
+            <View className='absolute z-20 mt-2 ml-2'>
               <MaterialIcons name='email' style={{color: "black", fontSize: 25}}/>
             </View>
-            <TextInput onChangeText={(e) => setEmail(e)} value={email} keyboardType="email-address" placeholderTextColor={"gray"} placeholder='Email' className='bg-white w-[370px] h-[45px] text-black border-2 border-gray-700 rounded-xl pl-10'/>
+            <TextInput onChangeText={(e) => setEmail(e)} value={email} keyboardType="email-address" placeholderTextColor={"gray"} placeholder='Email' className='bg-white w-[370px] md:w-[580px] h-[45px] text-black rounded-xl pl-10' style={{elevation: 20}}/>
           </Animated.View>
           
           <Animated.View className='flex-row ml-2 mt-4'>
             <Animated.View  entering={SlideInLeft.delay(500).duration(600)}>
-              <View className='absolute z-10 mt-1.5 ml-1'>
+              <View className='absolute z-20 mt-1.5 ml-1'>
                 <Feather name='user' style={{color: "black", fontSize: 25}}/>
               </View>
-              <TextInput onChangeText={(e) => setFirstName(e)} value={firstName} placeholderTextColor={"gray"} placeholder='First Name' className='bg-white w-[180px] h-[45px] text-black border-2 border-gray-700 rounded-xl pl-8'/>
+              <TextInput onChangeText={(e) => setFirstName(e)} value={firstName} placeholderTextColor={"gray"} placeholder='First Name' className='bg-white w-[180px] md:w-[285px] h-[45px] text-black rounded-xl pl-8' style={{elevation: 20}}/>
             </Animated.View>
             <Animated.View  entering={SlideInRight.delay(500).duration(600)}>
-              <View className='absolute z-10 ml-4 mt-1.5'>
+              <View className='absolute z-20 ml-4 mt-1.5'>
                 <Feather name='user' style={{color: "black", fontSize: 25}}/>
               </View>
-              <TextInput onChangeText={(e) => setLastName(e)}  value={lastName} placeholderTextColor={"gray"} placeholder='Last Name' className='bg-white w-[180px] h-[45px] text-black border-2 border-gray-700 rounded-xl pl-9 ml-2'/>
+              <TextInput onChangeText={(e) => setLastName(e)}  value={lastName} placeholderTextColor={"gray"} placeholder='Last Name' className='bg-white w-[180px] md:w-[285px] h-[45px] text-black rounded-xl pl-9 ml-2' style={{elevation: 20}}/>
             </Animated.View>
           </Animated.View>
 
           <Animated.View className='flex-row ml-2 mt-4'>
             <Animated.View entering={SlideInLeft.delay(700).duration(600)}>
-              <View className='absolute z-10 mt-2 ml-1'>
+              <View className='absolute z-20 mt-2 ml-1'>
                 <Entypo name='phone' style={{color: "black", fontSize: 25}}/>
               </View>
-              <TextInput onChangeText={(e) => setPhoneNumber(e)} value={phoneNumber} keyboardType="number-pad" placeholderTextColor={"gray"} placeholder='Phone Number' className='bg-white w-[250px] h-[45px] text-black border-2 border-gray-700 rounded-xl pl-8'/>
+              <TextInput onChangeText={(e) => setPhoneNumber(e)} value={phoneNumber} keyboardType="number-pad" placeholderTextColor={"gray"} placeholder='Phone Number' className='bg-white w-[250px] md:w-[400px] h-[45px] text-black rounded-xl pl-8' style={{elevation: 20}}/>
             </Animated.View>
             <Animated.View entering={SlideInRight.delay(700).duration(600)}>
-              <View className='absolute z-10 ml-4 mt-2'>
+              <View className='absolute z-20 ml-4 mt-2'>
                 <MaterialCommunityIcons name='postage-stamp' style={{color: "black", fontSize: 25}}/>
               </View>
-              <TextInput onChangeText={(e) => setPostalCode(e)} value={postalCode} keyboardType="number-pad" placeholderTextColor={"gray"} placeholder='Zip Code' className='bg-white w-[110px] h-[45px] text-black border-2 border-gray-700 rounded-xl pl-9 ml-2'/>
+              <TextInput onChangeText={(e) => setPostalCode(e)} value={postalCode} keyboardType="number-pad" placeholderTextColor={"gray"} placeholder='Zip Code' className='bg-white w-[110px] md:w-[170px] h-[45px] text-black rounded-xl pl-9 ml-2' style={{elevation: 20}}/>
             </Animated.View>
           </Animated.View>
 
           <Animated.View className='flex-row ml-2 mt-4'>
             <Animated.View entering={SlideInLeft.delay(700).duration(600)}>
-              <View className='absolute z-10 mt-2 ml-2'>
+              <View className='absolute z-20 mt-2 ml-2'>
                 <MaterialCommunityIcons name='home-city' style={{color: "black", fontSize: 25}}/>
               </View>
-              <TextInput onChangeText={(e) => setCity(e)} value={city} placeholderTextColor={"gray"} placeholder='City' className='bg-white w-[180px] h-[45px] text-black border-2 border-gray-700 rounded-xl pl-10'/>
+              <TextInput onChangeText={(e) => setCity(e)} value={city} placeholderTextColor={"gray"} placeholder='City' className='bg-white w-[180px] md:w-[285px] h-[45px] text-black rounded-xl pl-10' style={{elevation: 20}}/>
             </Animated.View>
             <Animated.View entering={SlideInRight.delay(700).duration(600)}>
-              <View className='absolute z-10 ml-4 mt-2'>
+              <View className='absolute z-20 ml-4 mt-2'>
                 <MaterialIcons name='location-city' style={{color: "black", fontSize: 25}}/>
               </View>
-              <TextInput onChangeText={(e) => setState(e)}  value={state} placeholderTextColor={"gray"} placeholder='State' className='bg-white w-[180px] h-[45px] text-black border-2 border-gray-700 rounded-xl pl-9 ml-2'/>
+              <TextInput onChangeText={(e) => setState(e)}  value={state} placeholderTextColor={"gray"} placeholder='State' className='bg-white w-[180px] md:w-[285px] h-[45px] text-black rounded-xl pl-9 ml-2' style={{elevation: 20}}/>
             </Animated.View>
           </Animated.View>
 
           <Animated.View entering={SlideInDown.delay(800).duration(600)} className='ml-2 mt-4'>
-            <TextInput multiline={true} numberOfLines={8} onChangeText={(e) => setAddress(e)} value={address} placeholderTextColor={"gray"} placeholder='Address' className='bg-white w-[370px] text-black border-2 border-gray-700 rounded-xl pl-3'/>
+            <TextInput multiline={true} numberOfLines={8} onChangeText={(e) => setAddress(e)} value={address} placeholderTextColor={"gray"} placeholder='Address' className='bg-white mr-3 text-black rounded-xl pl-3' style={{elevation: 20}}/>
           </Animated.View>
 
-          <Animated.View entering={SlideInDown.delay(900).duration(600)} className='justify-center items-center mt-14'>
-            <Pressable onPress={() => addShippingDetails()} className={disabledTermDeliveryButton ? 'bg-gray-400 active:bg-black items-center w-[250px] rounded-3xl' : 'bg-gray-800 active:bg-black items-center w-[280px] rounded-3xl'} disabled={disabledTermDeliveryButton}>
-              <Text className='text-white font-bold text-xl p-3'>Add Shipping Details</Text>
+          <Animated.View entering={SlideInDown.delay(900).duration(600)} className='justify-center items-center mt-20'>
+            <Pressable onPress={() => addShippingDetails()} className={disabledTermDeliveryButton ? 'bg-gray-400 active:bg-black items-center w-[250px] rounded-3xl' : 'bg-gray-800 active:bg-black items-center w-[280px] rounded-3xl'} style={{elevation: 15}} disabled={disabledTermDeliveryButton}>
+              <Text className='text-white font-bold text-xl px-3 py-4'>Add Shipping Details</Text>
             </Pressable>
           </Animated.View>
         </Animated.View>

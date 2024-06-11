@@ -1,12 +1,14 @@
-import {View, Text, FlatList, Image, Pressable, Modal, ActivityIndicator} from 'react-native';
+import {View, Text, FlatList, Image, Pressable, Modal, ActivityIndicator, ScrollView, TextInput} from 'react-native';
 import React, {useEffect, useState} from 'react';
 
 import Entypo from 'react-native-vector-icons/Entypo';
 import MaterialIcons from 'react-native-vector-icons/MaterialIcons';
 
-import Animated, { FadeInUp, SlideInUp } from 'react-native-reanimated';
+import Animated, { FadeIn, FadeInUp, FadeOut, FadeOutUp, SlideInDown, SlideInLeft, SlideInRight, SlideInUp } from 'react-native-reanimated';
+
 
 import { useAuth0 } from 'react-native-auth0';
+
 
 const ViewAllProduct = () => {
 
@@ -14,8 +16,11 @@ const ViewAllProduct = () => {
 
   const [products, setProducts] = useState([]);
   const [modal, setModal] = useState(false);
+  const [editModal, setEditModal] = useState(false);
   const [value, setValue] = useState({})
   const [loader, setLoader] = useState(false) 
+
+  const [category, setCategory] = useState("Out Of Stock")
 
   const [image1, setImage1] = useState(true)
   const [image2, setImage2] = useState(false)
@@ -41,7 +46,7 @@ const ViewAllProduct = () => {
 
   const getProducts = async () => {
     try {
-      const response = await fetch(`${process.env.SERVER_URL}/product`);
+      const response = await fetch(`${process.env.SERVER}/product`);
       const jsonData = await response.json();
 
       setProducts(jsonData);
@@ -69,13 +74,63 @@ const ViewAllProduct = () => {
 
       const token = await getCredentials();
 
-      const response = await fetch(`${process.env.SERVER_URL}/admin/product/${id}`, {method: "DELETE", headers: {Authorization: `Bearer ${token.accessToken}`}})
+      const response = await fetch(`${process.env.SERVER}/admin/product/${id}`, {method: "DELETE", headers: {Authorization: `Bearer ${token.accessToken}`}})
       setLoader(false)
       setModal(false)
       setProducts(products.filter((product) => product.product_id !== id))
     } catch (err) {
       console.error(err.message)
     } 
+  }
+
+  const ConfirmNewCategory = async (id) => {
+    try {
+      const body = { category }
+
+      const token = await getCredentials();
+
+      const response = await fetch(`${process.env.SERVER}/admin/product/${id}`, {
+        method: "PUT",
+        headers: {"Content-Type": "application/json", Authorization: `Bearer ${token.accessToken}`},
+        body: JSON.stringify(body)
+      })
+  
+      setEditModal(false)
+      setModal(false)
+      setLoader(true)
+      await getProducts()
+      setLoader(false)
+      setCategory("Out Of Stock")
+    } catch (err) {
+      console.error(err.message)
+    }
+  }
+
+  const OutOfStock = async (id) => {
+    try {
+      const body = { category }
+
+      const token = await getCredentials();
+
+      const response = await fetch(`${process.env.SERVER}/admin/product/${id}`, {
+        method: "PUT",
+        headers: {"Content-Type": "application/json", Authorization: `Bearer ${token.accessToken}`},
+        body: JSON.stringify(body)
+      })
+  
+      setEditModal(false)
+      setModal(false)
+      setLoader(true)
+      await getProducts()
+      setLoader(false)
+      setCategory("Out Of Stock")
+    } catch (err) {
+      console.error(err.message)
+    }
+  }
+
+  const editModalTurnOff = () => {
+    setEditModal(false)
   }
 
   return (
@@ -103,7 +158,7 @@ const ViewAllProduct = () => {
                       <Text className='text-black text-lg font-bold ml-4 mt-1'>{product.item.title}</Text>
                       <Text className='text-red-500 font-bold ml-4'>Rs. {product.item.price}</Text>
                       <View className='mr-3 flex items-end'>
-                          <Text className='text-gray-600 text-[10px]'>{product.item.category}</Text>
+                          <Text className={product.item.category === "Out Of Stock" ? 'text-red-600 text-[10px] font-bold' : 'text-gray-600 text-[10px]'}>{product.item.category}</Text>
                           <Text className='text-gray-600 text-[13px]'>{product.item.brand}</Text>
                       </View>
               </Pressable>
@@ -114,11 +169,12 @@ const ViewAllProduct = () => {
 
       <Modal onRequestClose={() => setModal(false)} visible={modal} transparent={true} animationType="slide">
           <View className='bg-white w-screen h-screen'>
-            <Pressable className='absolute items-center transition-all active:bg-gray-200 rounded-full mt-6 w-[40px] right-4' onPress={() => setModal(false)}>
-              <Entypo name='cross' style={{color: "black", fontSize: 40}}/>
+            <Pressable className='absolute z-10 items-center transition-all active:bg-gray-200 rounded-full mt-6 w-[40px] right-4' onPress={() => setModal(false)}>
+                <Entypo name='cross' style={{color: "black", fontSize: 40}}/>
             </Pressable>
-            <View className='border-b-2 border-gray-300 mx-3 pb-10'>
-              <View className='mt-16 flex-row'>
+
+            <View className='border-b-2 border-gray-300 mx-3 pb-6'>
+              <View className='mt-14 flex-row'>
                                                               {/* Image 1 */}
                 {image1 && <View className='ml-5 mt-10'>
                   <Image className='w-[150px] h-[150px] rounded-lg' source={{uri: value.image1}} />
@@ -136,7 +192,7 @@ const ViewAllProduct = () => {
                   <Text numberOfLines={2} className='text-black font-bold text-lg w-[170px]'>{value.title}</Text>
                   <Text className='text-red-500 font-bold text-[15px]'>Rs. {value.price}</Text>
                   <View className='items-end justify-end mr-6 mt-10'>
-                    <Text className='text-gray-500 text-[11px]'>{value.category}</Text>
+                    <Text className={value.category === "Out Of Stock" ? 'text-red-700 font-bold text-[11px]' : 'text-gray-500 text-[11px]'}>{value.category}</Text>
                     <Text className='text-gray-500 font-medium text-[13px]'>{value.brand}</Text>
                   </View>
                 </View>
@@ -155,18 +211,59 @@ const ViewAllProduct = () => {
               </View>
             </View>
 
-            <View className='mt-10 ml-6 w-[350px] h-[200px]'>
-              <Text className='text-black font-bold text-xl'>Description:</Text>
-              <Text className='text-gray-600 font-semibold text-lg'>{value.description}</Text>
+            <View>
+              <Text className='ml-7 mt-2 text-gray-600 font-bold text-xl'>Description</Text>
+              <ScrollView className='ml-7 mr-3 mt-1 h-[220px]'>
+                <Text className='text-gray-400 font-medium ml-2'>{value.description}</Text>
+              </ScrollView>
             </View>
 
-            <View className='absolute inset-x-10 bottom-10 items-center'>
-              {loader ? <Pressable disabled={true} className='flex-row items-center justify-center bg-red-400 active:bg-red-600 w-[200px] h-[60px] rounded-xl'><ActivityIndicator size='large'/></Pressable> : <Pressable className='flex-row items-center justify-center bg-red-500 active:bg-red-600 w-[200px] h-[60px] rounded-xl' onPress={() => deleteProduct(value.product_id)}>
-                <Text className='text-white text-xl font-bold ml-4'>Delete</Text>
-                <MaterialIcons name='delete' style={{color: "white", fontSize: 20, marginLeft: 5}}/>
-              </Pressable>}
+            <View className='absolute bottom-10 ml-8'>
+              <View className='flex-row items-center justify-center gap-x-5'> 
+                <Pressable style={{elevation: 25}} className='flex-row items-center justify-center bg-yellow-400 active:bg-yellow-500 w-[150px] h-[60px] rounded-xl' onPress={() => setEditModal(true)}>
+                  <Text className='text-white font-bold text-xl'>Edit</Text>
+                </Pressable>
+
+                <Pressable style={{elevation: 25}} className='flex-row items-center justify-center bg-red-500 active:bg-red-600 w-[150px] h-[60px] rounded-xl' onPress={() => deleteProduct(value.product_id)}>
+                  <Text className='text-white text-xl font-bold ml-4'>Delete</Text>
+                  <MaterialIcons name='delete' style={{color: "white", fontSize: 20, marginLeft: 5}}/>
+                </Pressable>
+              </View>
             </View>
           </View>
+      </Modal>
+
+      <Modal onRequestClose={() => editModalTurnOff()} visible={editModal} transparent={true} animationType='slide'>
+        <Animated.View style={{elevation: 100}} className='mt-[200px] rounded-t-[50px] bg-white h-screen w-screen'>
+          
+          <Animated.View entering={SlideInUp.delay(200).duration(500)} className='flex items-center justify-center'>
+            <Animated.Text className='text-black font-bold text-xl mt-7'> Edit Section </Animated.Text>
+          </Animated.View>
+
+          <Animated.View entering={SlideInLeft.delay(300).duration(500)} className='mt-6 ml-5 flex-row'>
+            <Animated.Text className="text-black font-bold mt-2.5 mr-3">Category</Animated.Text>
+            <Animated.View>
+              <TextInput placeholder='New Category...' placeholderTextColor={"gray"} className='text-black text-md rounded-lg bg-white pl-4 w-[190px] h-[40px]' style={{elevation: 15}} onChangeText={e => setCategory(e)}/>
+            </Animated.View>
+
+            {category !== "Out Of Stock" && <Animated.View entering={FadeIn.duration(200)} exiting={FadeOut.duration(200)}>
+              <View className='absolute top-1 -left-6'>
+                <Entypo name='triangle-left' style={{color: "green", fontSize: 40, marginLeft: 10, bottom: 2}}/>
+              </View>
+              
+              <Pressable className='bg-green-700 rounded-xl ml-3 active:bg-green-800' onPress={() => ConfirmNewCategory(value.product_id)}>
+                <Animated.Text className='font-bold text-white px-4 py-3'>Confirm</Animated.Text>
+              </Pressable>
+            </Animated.View>}
+          </Animated.View>
+
+          <Animated.View style={{elevation: 25}} entering={SlideInDown.delay(500).duration(500)} className='absolute inset-x-14 bg-red-500 rounded-3xl mt-[140px] top-[375px]'>
+            <Pressable className='flex items-center justify-center px-6 py-5 rounded-3xl transition-all active:scale-105 active:bg-red-700 active' onPress={() => OutOfStock(value.product_id)}>
+              <Text className="text-white text-xl font-bold">Out of Stock</Text>
+            </Pressable>
+          </Animated.View>
+        
+        </Animated.View>
       </Modal>
     </Animated.View>
   );

@@ -5,13 +5,13 @@ const promisify = require("util")
 require("dotenv").config();
 
 const region ="ap-northeast-1"
-const bucketName = "wardrobe-pk"
-const accessKeyId = `${process.env.AWS_ACCESS_KEY}`
-const secretAccessKey = `${process.env.AWS_SECRET_ACCESS_KEY}`
+const bucketName = `${process.env.bucketName}`
+const accessKeyId = `${process.env.ACCESS_KEY}`
+const secretAccessKey = `${process.env.SECRET_ACCESS_KEY}`
 
 const s3 = new aws.S3({
-    region,
-    accessKeyId,
+    region, 
+    accessKeyId, 
     secretAccessKey,
     signatureVersion: 'v4'
 })

@@ -32,7 +32,7 @@ const ViewAllBrands = () => {
 
   const getAllBrand = async () => {
     try {
-      const response = await fetch(`${process.env.SERVER_URL}/brand`);
+      const response = await fetch(`${process.env.SERVER}/brand`);
       const jsonData = await response.json();
 
       setBrands(jsonData);
@@ -46,7 +46,7 @@ const ViewAllBrands = () => {
     try {
       const token = await getCredentials();
 
-      const response = fetch(`${process.env.SERVER_URL}/admin/brand/${id}`, {
+      const response = fetch(`${process.env.SERVER}/admin/brand/${id}`, {
         method: 'DELETE',
         headers: {Authorization: `Bearer ${token.accessToken}`}
       });

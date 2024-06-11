@@ -106,6 +106,18 @@ app.get("/product/category/:id", async (req, res) => {
     }
 })
 
+app.put("/admin/product/:id", checkJwt, checkPermissions, async (req, res) => {
+    try {
+        const { id } = req.params;
+        const { category } = req.body;
+
+        const updateCategory = await pool.query("UPDATE product SET category = $1 WHERE product_id = $2", [ category, id ])
+        res.json("Category was updated")
+    } catch (err) {
+        console.error(err.message)
+    }
+})
+
 app.delete("/admin/product/:id", checkJwt, checkPermissions, (req, res) => {
     try {
         const { id } = req.params;
@@ -212,3 +224,5 @@ app.put("/customer/order/:id", checkJwt, async (req, res) => {
 })
 
 app.listen(process.env.SERVER_PORT, () => console.log("server listening on port " + process.env.SERVER_PORT))
+
+module.exports = app;

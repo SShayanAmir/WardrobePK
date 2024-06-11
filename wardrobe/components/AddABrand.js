@@ -63,7 +63,7 @@ const AddABrand = () => {
 
         console.log(blob)
 
-        const { url } = await fetch(`${process.env.SERVER_URL}/s3url`).then(res => res.json())
+        const { url } = await fetch(`${process.env.SERVER}/s3url`).then(res => res.json())
         console.log(url)
 
         await fetch(url, {
@@ -81,7 +81,7 @@ const AddABrand = () => {
         const body = {coverTitle, galleryPhoto};
 
         // Post Brand To Our Server
-        const response = await fetch(`${process.env.SERVER_URL}/admin/brand`, {
+        const response = await fetch(`${process.env.SERVER}/admin/brand`, {
           method: "POST",
           headers: { "Content-Type": "application/json", Authorization: `Bearer ${token.accessToken}`},
           body: JSON.stringify(body)
@@ -93,7 +93,7 @@ const AddABrand = () => {
       }
       
     } catch (err) {
-      console.error(err.message)
+      console.log(err)
     }
   }
 

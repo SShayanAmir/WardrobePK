@@ -63,7 +63,7 @@ const AddAProduct = () => {
         const blob2 = await  photoResponse2.blob()
         const blob3 = await  photoResponse3.blob()
 
-        var { url } = await fetch(`${process.env.SERVER_URL}/s3url`).then(res => res.json())
+        var { url } = await fetch(`${process.env.SERVER}/s3url`).then(res => res.json())
         await fetch(url, {
           method: "PUT",
           headers: {
@@ -74,7 +74,7 @@ const AddAProduct = () => {
         const imageURL1 = url.split('?')[0]
         const image1 = imageURL1
 
-        var { url } = await fetch(`${process.env.SERVER_URL}/s3url`).then(res => res.json())
+        var { url } = await fetch(`${process.env.SERVER}/s3url`).then(res => res.json())
         await fetch(url, {
           method: "PUT",
           headers: {
@@ -85,7 +85,7 @@ const AddAProduct = () => {
         const imageURL2 = url.split('?')[0]
         const image2 = imageURL2
 
-        var { url } = await fetch(`${process.env.SERVER_URL}/s3url`).then(res => res.json())
+        var { url } = await fetch(`${process.env.SERVER}/s3url`).then(res => res.json())
         await fetch(url, {
           method: "PUT",
           headers: {
@@ -110,7 +110,7 @@ const AddAProduct = () => {
 
         const token = await getCredentials();
 
-        const response = await fetch(`${process.env.SERVER_URL}/admin/product`, {
+        const response = await fetch(`${process.env.SERVER}/admin/product`, {
           method: 'POST',
           headers: {'Content-Type': 'application/json', Authorization: `Bearer ${token.accessToken}`},
           body: JSON.stringify(body),

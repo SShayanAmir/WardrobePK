@@ -8,6 +8,8 @@ export function CartHandler({children}) {
     const [cart, setCart] = useState([]);
     const [grandTotalCartPrice, setGrandTotalCartPrice] = useState(null)
 
+    const [firstTimeCheckerForCart, setFirstTimeCheckerForCart] = useState(true)
+
     const addToCart = async (id, title, image1, price, quantity, brand, size) => {
             setCart((carts) => {
               if(carts.some(item => item.id === id)) {
@@ -15,11 +17,14 @@ export function CartHandler({children}) {
               }
               else {
                 setCart([...cart, { id, title, image1, price, quantity, brand, size }]);    
+                setFirstTimeCheckerForCart(false)
               }
             })
           const output = JSON.stringify(cart)
+          const output2 = JSON.stringify(firstTimeCheckerForCart)
 
           await AsyncStorage.setItem("@Cart_List", output)
+          await AsyncStorage.setItem("@firstTimeCheckerForCart", output2)
         }
 
     const getCartList = async () => {
@@ -61,7 +66,7 @@ export function CartHandler({children}) {
     }
     
     return(
-        <CartContext.Provider value={{cart, addToCart, removeFromCart, setCart, clearCart, grandTotalCartPrice, setGrandTotalCartPrice, getCartList}}>
+        <CartContext.Provider value={{firstTimeCheckerForCart, setFirstTimeCheckerForCart, cart, addToCart, removeFromCart, setCart, clearCart, grandTotalCartPrice, setGrandTotalCartPrice, getCartList}}>
             {children}
         </CartContext.Provider>
     )

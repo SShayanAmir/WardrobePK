@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useEffect } from 'react';
 
 //REACT NATIVE AUTH0
 
@@ -21,8 +21,14 @@ import {CartHandler} from './context/CartContext';
 import {FavoritesHandler} from './context/FavoritesContext';
 import {ScrollToTop} from './context/ScrollToTop';
 
+import SplashScreen from "react-native-splash-screen"
+
 export default function App() {
   const Stack = createNativeStackNavigator();
+
+  useEffect(() => {
+    SplashScreen.hide();
+  }, [])
 
   return (
     <Category>

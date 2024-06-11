@@ -1,4 +1,4 @@
-import { View, Text, TextInput, Pressable, ActivityIndicator, Modal, ScrollView } from 'react-native'
+import { View, Text, TextInput, Pressable, ActivityIndicator, Modal, ScrollView, useWindowDimensions } from 'react-native'
 import React, { useEffect, useState } from 'react'
 
 import Navbar from '../components/Navbar';
@@ -12,6 +12,8 @@ import { useAuth0 } from 'react-native-auth0';
 
 const TrackMyOrder = () => {
     const {getCredentials} = useAuth0();
+
+    const {width} = useWindowDimensions();
 
     const [value, setValue] = useState("0")
     const [trackingNumber, setTrackingNumber] = useState("")
@@ -28,7 +30,7 @@ const TrackMyOrder = () => {
             setLoading(true)
             setTrackingNumber(value)
 
-            const response = await fetch(`${process.env.SERVER_URL}/customer/order/${value}`)
+            const response = await fetch(`${process.env.SERVER}/customer/order/${value}`)
             const jsonData = await response.json()
             
             setLoading(false)
@@ -54,7 +56,7 @@ const TrackMyOrder = () => {
             
             const token = await getCredentials();
 
-            const response = await fetch(`${process.env.SERVER_URL}/customer/order/${trackingNumber}`, {method: "PUT", headers: {"Content-Type": "application/json",  Authorization: `Bearer ${token.accessToken}`}, body: JSON.stringify(body)})
+            const response = await fetch(`${process.env.SERVER}/customer/order/${trackingNumber}`, {method: "PUT", headers: {"Content-Type": "application/json",  Authorization: `Bearer ${token.accessToken}`}, body: JSON.stringify(body)})
             
             setOrder([])
             setLoading(false)
@@ -73,9 +75,9 @@ const TrackMyOrder = () => {
                 <Text className='text-white text-2xl font-bold'>Track My Order</Text>
             </Animated.View>
 
-            <Animated.View entering={SlideInDown.duration(500)} className='absolute top-[100px] inset-x-10 flex-row'>
-                <TextInput onSubmitEditing={() => getOrder()} onChangeText={(e => setValue(e))} placeholderTextColor={"gray"} placeholder='Enter Your Tracking Number...' className='bg-white rounded-xl h-[40px] w-[300px] pl-4 text-black' style={{elevation: 20}}/>
-                <View className='absolute right-3 top-1'>
+            <Animated.View entering={SlideInDown.duration(500)} className='absolute container top-[100px] inset-x-10 flex-row'>
+                <TextInput onSubmitEditing={() => getOrder()} onChangeText={(e => setValue(e))} placeholderTextColor={"gray"} placeholder='Enter Your Tracking Number...' className={width > 550 ? 'bg-white rounded-xl h-[40px] w-[520px] pl-4 text-black' : 'bg-white rounded-xl h-[40px] w-[300px] pl-4 text-black'} style={{elevation: 20}}/>
+                <View className='right-10 top-1'>
                     <Ionicons name='search' style={{color: "black", fontSize: 25, backgroundColor: "white"}}/>
                 </View>
             </Animated.View>

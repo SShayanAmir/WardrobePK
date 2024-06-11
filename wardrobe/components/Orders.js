@@ -35,7 +35,7 @@ const Orders = () => {
 
             const token = await getCredentials();
 
-            const response = await fetch(`${process.env.SERVER_URL}/admin/order/${status}`, {headers: {Authorization: `Bearer ${token.accessToken}`}})
+            const response = await fetch(`${process.env.SERVER}/admin/order/${status}`, {headers: {Authorization: `Bearer ${token.accessToken}`}})
             const jsonData = await response.json()
             
             setLoading(false)
@@ -61,7 +61,7 @@ const Orders = () => {
 
       const token = await getCredentials();
 
-      const response = await fetch(`${process.env.SERVER_URL}/admin/order/${id}`, {
+      const response = await fetch(`${process.env.SERVER}/admin/order/${id}`, {
         method: "PUT",
         headers: {"Content-Type": "application/json", Authorization: `Bearer ${token.accessToken}`},
         body: JSON.stringify(body)
@@ -77,7 +77,7 @@ const Orders = () => {
 
       const token = await getCredentials();
 
-      const response = await fetch(`${process.env.SERVER_URL}/admin/order/${id}`, {
+      const response = await fetch(`${process.env.SERVER}/admin/order/${id}`, {
         method: "PUT",
         headers: {"Content-Type": "application/json", Authorization: `Bearer ${token.accessToken}`},
         body: JSON.stringify(body)
@@ -97,7 +97,7 @@ const Orders = () => {
       setLoading(true)
       
       const token = await getCredentials();
-      const response = await fetch(`${process.env.SERVER_URL}/admin/order/${status}`, {headers: {Authorization: `Bearer ${token.accessToken}`}})
+      const response = await fetch(`${process.env.SERVER}/admin/order/${status}`, {headers: {Authorization: `Bearer ${token.accessToken}`}})
       const jsonData = await response.json()
       setLoading(false)
       setOrders(jsonData)
@@ -114,7 +114,7 @@ const Orders = () => {
       setLoading(true)
       
       const token = await getCredentials();
-      const response = await fetch(`${process.env.SERVER_URL}/admin/order/${status}`, {headers: {Authorization: `Bearer ${token.accessToken}`}})
+      const response = await fetch(`${process.env.SERVER}/admin/order/${status}`, {headers: {Authorization: `Bearer ${token.accessToken}`}})
       const jsonData = await response.json()
       setLoading(false)
       setOrders(jsonData)
@@ -131,7 +131,7 @@ const Orders = () => {
       setLoading(true)
       
       const token = await getCredentials();
-      const response = await fetch(`${process.env.SERVER_URL}/admin/order/${status}`, {headers: {Authorization: `Bearer ${token.accessToken}`}})
+      const response = await fetch(`${process.env.SERVER}/admin/order/${status}`, {headers: {Authorization: `Bearer ${token.accessToken}`}})
       const jsonData = await response.json()
       setLoading(false)
       setOrders(jsonData)
@@ -148,10 +148,17 @@ const Orders = () => {
       setLoading(true)
       
       const token = await getCredentials();
-      const response = await fetch(`${process.env.SERVER_URL}/admin/order/${status}`, {headers: {Authorization: `Bearer ${token.accessToken}`}})
+      const response = await fetch(`${process.env.SERVER}/admin/order/${status}`, {headers: {Authorization: `Bearer ${token.accessToken}`}})
       const jsonData = await response.json()
       setLoading(false)
       setOrders(jsonData)
+    }
+
+    const DeleteOrder = async (id) => {
+      const token = await getCredentials();
+      const response = await fetch(`${process.env.SERVER}/admin/order/${id}`, {method: "DELETE" ,headers: {Authorization: `Bearer ${token.accessToken}`}})
+      
+      setToggleOrderInfoModal(false)
     }
 
   return (
@@ -236,7 +243,7 @@ const Orders = () => {
           </Animated.View>
 
         <Animated.View entering={ZoomInEasyDown.delay(400).duration(500)}>
-          <ScrollView className='bg-white rounded-2xl h-[350px] mx-3 mt-14' style={{elevation: 15}}>
+          <ScrollView className='bg-white rounded-2xl h-[500px] mx-3 mt-14' style={{elevation: 15}}>
             <View className='flex-row ml-5 mt-6 items-baseline'>
               <Text className='text-black text-xl font-semibold'>Name:</Text>
               <ScrollView horizontal className='w-screen mr-4 ml-4'>
@@ -319,7 +326,7 @@ const Orders = () => {
           </ScrollView>
         </Animated.View>
           
-          <Animated.View entering={SlideInDown.delay(500).duration(500)} className='absolute bottom-56 flex-row ml-3'>
+          <Animated.View entering={SlideInDown.delay(500).duration(500)} className='absolute bottom-24 flex-row ml-3'>
             <Pressable className='w-[160px] bg-gray-700 active:bg-black active:scale-105 rounded-xl mr-2' style={{elevation: 15}} onPress={() => setToggleCartModal(true)}>
               <View className='p-6 flex-row items-center'>
                 <Text className='font-black text-xl text-white mr-1.5'>View Cart</Text>
@@ -331,6 +338,14 @@ const Orders = () => {
                 <Text className='font-black text-xl text-white'>Change Status</Text>
               </View>
             </Pressable>
+          </Animated.View>
+          
+          <Animated.View entering={SlideInDown.delay(500).duration(500)} className='absolute bottom-5 inset-x-10'>
+            {value.status === "Canceled" || value.status === "Delivered" ? <Pressable className='bg-red-500 active:bg-red-600 active:scale-105 rounded-xl' style={{elevation: 15}} onPress={() => DeleteOrder(value.trackingNumber)}>
+              <View className='p-4 flex-row justify-center items-center'>
+                <Text className='font-bold text-xl text-white'>Delete</Text>
+              </View>
+            </Pressable>: <></>}
           </Animated.View>
         </Animated.View>
       </Modal>
@@ -347,26 +362,26 @@ const Orders = () => {
       </Modal>
 
       <Modal visible={toggleStatusModal} onRequestClose={() => setToggleStatusModal(false)} transparent={true} animationType='slide'>
-        <View className='absolute inset-x-4 inset-y-[310px] items-center bg-gray-50 rounded-2xl' style={{elevation: 25}}>
+        <View className='absolute inset-x-5 inset-y-[310px] items-center bg-gray-50 rounded-2xl border-2 border-gray-200' style={{elevation: 50}}>
           
-          <Animated.View entering={SlideInRight.delay(200).duration(500)} className='absolute top-3 right-3'>
+          <Animated.View className='absolute top-3 right-3'>
             <Pressable className='active:bg-gray-200 rounded-full' onPress={() => setToggleStatusModal(false)}>
               <Entypo name='cross' style={{color: "black", fontSize: 35}}/>
             </Pressable>
           </Animated.View>
 
           <Animated.View className='mt-5'>
-            <Animated.Text entering={SlideInDown.delay(200).duration(500)} className='text-black font-semibold text-xl'>Set Status To:</Animated.Text>
+            <Animated.Text className='text-black font-semibold text-xl'>Set Status To:</Animated.Text>
           </Animated.View>
           
           <Animated.View className='flex-row mt-8'>
-            <Animated.View entering={SlideInLeft.delay(600).duration(500)}>
+            <Animated.View>
               <Pressable style={{elevation: 20}} className='items-center justify-center bg-green-500 active:bg-green-600 active:scale-105 w-[150px] h-[80px] rounded-xl' onPress={() => changeStatusToShipped(value.trackingNumber)}>
                 <Text className='text-white text-xl font-bold'>To Shipped</Text>
               </Pressable>
             </Animated.View>
           
-            <Animated.View entering={SlideInRight.delay(600).duration(500)}>
+            <Animated.View>
               <Pressable style={{elevation: 20}} className='items-center justify-center ml-3 bg-blue-600 active:bg-blue-700 active:scale-105 w-[150px] h-[80px] rounded-xl' onPress={() => changeStatusToDelivered(value.trackingNumber)}>
                 <Text className='text-white text-xl font-bold'>To Delivered</Text>
               </Pressable>
